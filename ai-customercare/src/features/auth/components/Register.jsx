@@ -2,7 +2,6 @@ import { registerUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { registerSchema } from "../../../utils/validationSchema";
-import { handleAuthError } from "../../../utils/handleAuthError";
 import PasswordInput from "../../../components/input/PasswordInput";
 
 const Register = () => {

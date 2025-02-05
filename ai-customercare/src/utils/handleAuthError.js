@@ -1,5 +1,4 @@
 export const handleAuthError = (error) => {
-  // Check if it's a Firebase error
   if (error.code) {
     switch (error.code) {
       case "auth/email-already-in-use":
@@ -23,6 +22,5 @@ export const handleAuthError = (error) => {
     }
   }
 
-  // Fallback for any other type of error
   return "Terjadi kesalahan. Coba lagi nanti.";
 };

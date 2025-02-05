@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/authService";
 import { loginSchema } from "../../../utils/validationSchema";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import { handleAuthError } from "../../../utils/handleAuthError";
 import PasswordInput from "../../../components/input/PasswordInput";
 
 const Login = () => {
