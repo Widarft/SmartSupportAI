@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -10,7 +11,13 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_APP_ID,
 };
 
+// Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
+
+// Inisialisasi Firebase Authentication
 const auth = getAuth(app);
 
-export { auth };
+// Inisialisasi Firestore Database
+const db = getFirestore(app);
+
+export { auth, db };

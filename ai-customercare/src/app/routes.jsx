@@ -5,6 +5,7 @@ import Register from "../features/auth/components/Register";
 import Login from "../features/auth/components/Login";
 import Home from "../features/home/components/Home";
 import PrivateRoute from "./PrivateRoute";
+import FAQ from "../features/faq-management/components";
 import { auth } from "../services/firebase";
 
 function AppRoutes() {
@@ -37,6 +38,14 @@ function AppRoutes() {
           element={
             <PrivateRoute>
               <Home />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/faqmanagement"
+          element={
+            <PrivateRoute>
+              <FAQ />
             </PrivateRoute>
           }
         />
