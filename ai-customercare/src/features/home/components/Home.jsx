@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../../auth/services/authService";
 import { auth } from "../../../services/firebase";
+import Sidebar from "../../../components/ui/Sidebar";
 
 const Home = () => {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -15,29 +13,20 @@ const Home = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-      navigate("/landingpage");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
   if (!user) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-screen bg-gray-200">
-      <h1 className="text-3xl font-bold mb-4">Welcome to the Home Page</h1>
-      <p className="mb-2 text-lg">Hello, {user.email}!</p>
-      <button
-        onClick={handleLogout}
-        className="bg-red-500 text-white px-4 py-2 rounded mb-2"
-      >
-        Logout
-      </button>
+    <div className="flex min-h-screen">
+      {/* Sidebar tetap ada di sini */}
+      <Sidebar />
+
+      {/* Konten Utama */}
+      <div className="flex-1 p-6 bg-gray-200">
+        <h1 className="text-3xl font-bold mb-4">Welcome to the Dashboard</h1>
+        <p className="text-lg">Hello, {user.email}!</p>
+      </div>
     </div>
   );
 };
