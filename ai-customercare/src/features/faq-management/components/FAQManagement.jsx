@@ -99,8 +99,16 @@ const FAQManagement = () => {
           value={filterCategory}
         >
           <option value="">Semua Kategori</option>
-          <option value="Alam">Alam</option>
-          <option value="Technical">Technical</option>
+          <option value="Pemesanan">Pemesanan</option>
+          <option value="Pembayaran">Pembayaran</option>
+          <option value="Pengiriman">Pengiriman</option>
+          <option value="Pengembalian & Refund">Pengembalian & Refund</option>
+          <option value="Akun & Keamanan">Akun & Keamanan</option>
+          <option value="Produk">Produk</option>
+          <option value="Promosi & Voucher">Promosi & Voucher</option>
+          <option value="Program Membership">Program Membership</option>
+          <option value="Teknikal">Teknikal</option>
+          <option value="Lainnya">Lainnya</option>
         </select>
         <select
           className="border p-2 rounded"

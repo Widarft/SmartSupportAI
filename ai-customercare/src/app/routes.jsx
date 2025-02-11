@@ -6,6 +6,7 @@ import Login from "../features/auth/components/Login";
 import Home from "../features/home/components/Home";
 import PrivateRoute from "./PrivateRoute";
 import FAQ from "../features/faq-management/components";
+import AIChatBotReview from "../features/ai-chatbot/components";
 import { auth } from "../services/firebase";
 
 function AppRoutes() {
@@ -46,6 +47,14 @@ function AppRoutes() {
           element={
             <PrivateRoute>
               <FAQ />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/aichatbotreview"
+          element={
+            <PrivateRoute>
+              <AIChatBotReview />
             </PrivateRoute>
           }
         />

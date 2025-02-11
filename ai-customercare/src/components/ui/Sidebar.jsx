@@ -42,7 +42,7 @@ const Sidebar = () => {
           </li>
           <li>
             <NavLink
-              to="/chatbotreview"
+              to="/aichatbotreview"
               className="block px-4 py-2 rounded hover:bg-gray-700"
             >
               Chatbot Review
