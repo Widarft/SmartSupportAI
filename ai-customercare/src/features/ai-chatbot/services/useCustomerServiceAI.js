@@ -34,7 +34,12 @@ export const useCustomerServiceAI = () => {
         safetySettings,
       });
 
-      const prompt = buildPrompt(userPrompt, history, faqs);
+      const formattedHistory = history.map((msg) => ({
+        user: msg.user,
+        response: msg.message,
+      }));
+
+      const prompt = buildPrompt(userPrompt, formattedHistory, faqs);
       const result = await model.generateContent(prompt);
       const response = await result.response.text();
 
