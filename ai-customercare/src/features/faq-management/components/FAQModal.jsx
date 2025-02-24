@@ -44,12 +44,12 @@ const FAQModal = ({ isOpen, onClose, onSubmit, initialData, categories }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h3 className="text-xl font-semibold mb-4">
-          {initialData?.id ? "Edit FAQ" : "Tambah FAQ"}
+          {initialData?.id ? "Edit FAQ" : "Add FAQ"}
         </h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            placeholder="Pertanyaan"
+            placeholder="Question"
             value={formData.question}
             onChange={(e) =>
               setFormData({ ...formData, question: e.target.value })
@@ -57,7 +57,7 @@ const FAQModal = ({ isOpen, onClose, onSubmit, initialData, categories }) => {
             className="w-full p-2 border rounded"
           />
           <textarea
-            placeholder="Jawaban"
+            placeholder="Answer"
             value={formData.answer}
             onChange={(e) =>
               setFormData({ ...formData, answer: e.target.value })
@@ -71,7 +71,7 @@ const FAQModal = ({ isOpen, onClose, onSubmit, initialData, categories }) => {
             }
             className="w-full p-2 border rounded"
           >
-            <option value="">Pilih Kategori</option>
+            <option value="">Select Category</option>
             {categories.map((category) => (
               <option key={category.id} value={category.name}>
                 {category.name}
@@ -84,13 +84,13 @@ const FAQModal = ({ isOpen, onClose, onSubmit, initialData, categories }) => {
               className="bg-gray-500 text-white px-4 py-2 rounded"
               onClick={handleClose}
             >
-              Batal
+              Cancel
             </button>
             <button
               type="submit"
               className="bg-blue-500 text-white px-4 py-2 rounded"
             >
-              {initialData?.id ? "Update" : "Simpan"}
+              {initialData?.id ? "Update" : "Save"}
             </button>
           </div>
         </form>

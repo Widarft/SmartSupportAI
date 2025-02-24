@@ -96,12 +96,12 @@ const FAQManagement = () => {
       }
 
       if (result.faqs.length === 0) {
-        setDebugMessage(`Tidak ada data dengan kategori "${filterCategory}"`);
+        setDebugMessage(`There is no data by category "${filterCategory}"`);
       }
     } catch (error) {
       console.error("Error fetching FAQs:", error);
       setDebugMessage("Error: " + error.message);
-      Swal.fire("Error!", "Gagal mengambil data FAQ", "error");
+      Swal.fire("Error!", "Failed to fetched FAQ data", "error");
     } finally {
       setIsLoading(false);
     }
@@ -131,7 +131,7 @@ const FAQManagement = () => {
     }
 
     if (response.success) {
-      Swal.fire("Sukses!", response.message, "success");
+      Swal.fire("Success!", response.message, "success");
       fetchFAQs("first");
       fetchTotalCount();
       handleCloseModal();
@@ -147,20 +147,20 @@ const FAQManagement = () => {
 
   const handleDelete = async (faqId) => {
     const result = await Swal.fire({
-      title: "Apakah anda yakin?",
-      text: "Data yang dihapus tidak dapat dikembalikan!",
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Ya, hapus!",
-      cancelButtonText: "Batal",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, cancel!",
     });
 
     if (result.isConfirmed) {
       const response = await deleteFAQ(faqId);
       if (response.success) {
-        Swal.fire("Terhapus!", response.message, "success");
+        Swal.fire("Deleted!", response.message, "success");
         fetchFAQs("first");
         fetchTotalCount();
       } else {
@@ -215,7 +215,7 @@ const FAQManagement = () => {
           onChange={handleFilterChange}
           value={filterCategory}
         >
-          <option value="">Semua Kategori</option>
+          <option value="">All Category</option>
           {categories.map((category) => (
             <option key={category.id} value={category.name}>
               {category.name}
@@ -227,14 +227,14 @@ const FAQManagement = () => {
           onChange={handleSortChange}
           value={sortOrder}
         >
-          <option value="newest">Terbaru</option>
-          <option value="oldest">Terlama</option>
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
         </select>
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
           onClick={() => setIsModalOpen(true)}
         >
-          <FaPlus className="mr-2" /> Tambah FAQ
+          <FaPlus className="mr-2" /> Add New FAQ
         </button>
       </div>
 
@@ -243,11 +243,11 @@ const FAQManagement = () => {
           <thead>
             <tr className="bg-gray-200">
               <th className="border p-2 w-10">No</th>
-              <th className="border p-2 w-36">Tanggal</th>
-              <th className="border p-2 w-40">Kategori</th>
-              <th className="border p-2 w-52">Pertanyaan</th>
-              <th className="border p-2 w-96">Jawaban</th>
-              <th className="border p-2 w-16">Aksi</th>
+              <th className="border p-2 w-36">Date</th>
+              <th className="border p-2 w-40">Category</th>
+              <th className="border p-2 w-52">Question</th>
+              <th className="border p-2 w-[500px]">Answer</th>
+              <th className="border p-2 w-16">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -301,8 +301,9 @@ const FAQManagement = () => {
       {/* Pagination controls */}
       <div className="flex justify-between items-center mt-4">
         <div className="text-sm text-gray-600">
-          Menampilkan {faqs.length ? (currentPage - 1) * pageSize + 1 : 0} -{" "}
-          {Math.min(currentPage * pageSize, totalItems)} dari {totalItems} FAQ
+          Show {faqs.length ? (currentPage - 1) * pageSize + 1 : 0} -{" "}
+          {Math.min(currentPage * pageSize, totalItems)} items of {totalItems}{" "}
+          FAQ
         </div>
         <div className="flex space-x-2">
           <button
@@ -317,7 +318,7 @@ const FAQManagement = () => {
             <FaChevronLeft />
           </button>
           <span className="px-3 py-1">
-            Halaman {currentPage} dari {totalPages || 1}
+            Page {currentPage} of {totalPages || 1}
           </span>
           <button
             className={`px-3 py-1 rounded ${

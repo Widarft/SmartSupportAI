@@ -26,13 +26,13 @@ const CategoryManagement = () => {
 
   const handleAddCategory = async () => {
     if (!categoryName.trim()) {
-      Swal.fire("Error!", "Nama kategori tidak boleh kosong.", "error");
+      Swal.fire("Error!", "The category name cannot be empty.", "error");
       return;
     }
 
     const response = await addCategory(categoryName);
     if (response.success) {
-      Swal.fire("Sukses!", response.message, "success");
+      Swal.fire("Success!", response.message, "success");
       setCategoryName("");
       fetchCategories();
       setIsModalOpen(false);
@@ -43,13 +43,13 @@ const CategoryManagement = () => {
 
   const handleEditCategory = async () => {
     if (!categoryName.trim()) {
-      Swal.fire("Error!", "Nama kategori tidak boleh kosong.", "error");
+      Swal.fire("Error!", "The category name cannot be empty.", "error");
       return;
     }
 
     const response = await updateCategory(selectedCategory.id, categoryName);
     if (response.success) {
-      Swal.fire("Sukses!", response.message, "success");
+      Swal.fire("Success!", response.message, "success");
       setCategoryName("");
       fetchCategories();
       setIsModalOpen(false);
@@ -60,20 +60,20 @@ const CategoryManagement = () => {
 
   const handleDeleteCategory = async (categoryId) => {
     const result = await Swal.fire({
-      title: "Apakah anda yakin?",
-      text: "Kategori yang dihapus tidak dapat dikembalikan!",
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Ya, hapus!",
-      cancelButtonText: "Batal",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "No, cancel!",
     });
 
     if (result.isConfirmed) {
       const response = await deleteCategory(categoryId);
       if (response.success) {
-        Swal.fire("Terhapus!", response.message, "success");
+        Swal.fire("Deleted!", response.message, "success");
         fetchCategories();
       } else {
         Swal.fire("Error!", response.message, "error");
@@ -97,13 +97,13 @@ const CategoryManagement = () => {
     <div className="flex min-h-screen">
       <Sidebar />
       <div className="p-6 max-w-[1440px] bg-white rounded-lg">
-        <h2 className="text-2xl font-semibold mb-4">Manajemen Kategori</h2>
+        <h2 className="text-2xl font-semibold mb-4">Category Management</h2>
 
         <button
           className="bg-blue-500 text-white px-4 py-2 rounded flex items-center mb-4"
           onClick={() => handleOpenModal()}
         >
-          <FaPlus className="mr-2" /> Tambah Kategori
+          <FaPlus className="mr-2" /> Add Category
         </button>
 
         <div className="relative overflow-x-auto">
@@ -111,15 +111,15 @@ const CategoryManagement = () => {
             <thead>
               <tr className="bg-gray-200">
                 <th className="border p-2 w-10">No</th>
-                <th className="border p-2">Nama Kategori</th>
-                <th className="border p-2 w-16">Aksi</th>
+                <th className="border p-2 w-[900px]">Category Name</th>
+                <th className="border p-2 w-16">Action</th>
               </tr>
             </thead>
             <tbody>
               {categories.map((category, index) => (
                 <tr key={category.id} className="text-center">
                   <td className="border p-2">{index + 1}</td>
-                  <td className="border p-2">{category.name}</td>
+                  <td className="border p-2 text-left">{category.name}</td>
                   <td className="p-2 flex justify-center space-x-2">
                     <button
                       className="text-yellow-500"
@@ -144,11 +144,11 @@ const CategoryManagement = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded-lg shadow-lg w-96">
               <h3 className="text-xl font-semibold mb-4">
-                {selectedCategory ? "Edit Kategori" : "Tambah Kategori"}
+                {selectedCategory ? "Edit Category" : "Add Category"}
               </h3>
               <input
                 type="text"
-                placeholder="Nama Kategori"
+                placeholder="Category Name"
                 value={categoryName}
                 onChange={(e) => setCategoryName(e.target.value)}
                 className="w-full p-2 border rounded mb-4"
@@ -159,7 +159,7 @@ const CategoryManagement = () => {
                   className="bg-gray-500 text-white px-4 py-2 rounded"
                   onClick={handleCloseModal}
                 >
-                  Batal
+                  Cancel
                 </button>
                 <button
                   type="button"
@@ -168,7 +168,7 @@ const CategoryManagement = () => {
                     selectedCategory ? handleEditCategory : handleAddCategory
                   }
                 >
-                  {selectedCategory ? "Update" : "Simpan"}
+                  {selectedCategory ? "Update" : "Save"}
                 </button>
               </div>
             </div>
