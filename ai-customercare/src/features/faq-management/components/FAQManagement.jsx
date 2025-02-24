@@ -6,11 +6,13 @@ import {
   updateFAQ,
   deleteFAQ,
 } from "../services/faqService";
+import { getUserCategories } from "../services/categoryService";
 import Swal from "sweetalert2";
 import FAQModal from "./FAQModal";
 
 const FAQManagement = () => {
   const [faqs, setFaqs] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFAQ, setSelectedFAQ] = useState(null);
   const [sortOrder, setSortOrder] = useState("newest");
@@ -18,11 +20,17 @@ const FAQManagement = () => {
 
   useEffect(() => {
     fetchFAQs();
+    fetchCategories();
   }, []);
 
   const fetchFAQs = async () => {
     const data = await getUserFAQs();
     setFaqs(data);
+  };
+
+  const fetchCategories = async () => {
+    const data = await getUserCategories();
+    setCategories(data);
   };
 
   const handleSubmit = async (formData) => {
@@ -99,16 +107,11 @@ const FAQManagement = () => {
           value={filterCategory}
         >
           <option value="">Semua Kategori</option>
-          <option value="Pemesanan">Pemesanan</option>
-          <option value="Pembayaran">Pembayaran</option>
-          <option value="Pengiriman">Pengiriman</option>
-          <option value="Pengembalian & Refund">Pengembalian & Refund</option>
-          <option value="Akun & Keamanan">Akun & Keamanan</option>
-          <option value="Produk">Produk</option>
-          <option value="Promosi & Voucher">Promosi & Voucher</option>
-          <option value="Program Membership">Program Membership</option>
-          <option value="Teknikal">Teknikal</option>
-          <option value="Lainnya">Lainnya</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.name}>
+              {category.name}
+            </option>
+          ))}
         </select>
         <select
           className="border p-2 rounded"
@@ -173,6 +176,7 @@ const FAQManagement = () => {
         onClose={handleCloseModal}
         onSubmit={handleSubmit}
         initialData={selectedFAQ}
+        categories={categories}
       />
     </div>
   );
