@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { logoutUser } from "../../features/auth/services/authService";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const [faqOpen, setFaqOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -32,14 +34,40 @@ const Sidebar = () => {
               Dashboard
             </NavLink>
           </li>
+
+          {/* FAQ Menu dengan Submenu */}
           <li>
-            <NavLink
-              to="/faqmanagement"
-              className="block px-4 py-2 rounded hover:bg-gray-700"
+            <button
+              onClick={() => setFaqOpen(!faqOpen)}
+              className="w-full flex justify-between items-center px-4 py-2 rounded hover:bg-gray-700"
             >
-              FAQ Management
-            </NavLink>
+              <span>FAQ</span>
+              {faqOpen ? <FaChevronUp /> : <FaChevronDown />}
+            </button>
+
+            {/* Submenu FAQ */}
+            {faqOpen && (
+              <ul className="ml-4 mt-1">
+                <li>
+                  <NavLink
+                    to="/faqmanagement"
+                    className="block px-4 py-2 rounded hover:bg-gray-700"
+                  >
+                    FAQ Management
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    to="/categorymanagement"
+                    className="block px-4 py-2 rounded hover:bg-gray-700"
+                  >
+                    Category Management
+                  </NavLink>
+                </li>
+              </ul>
+            )}
           </li>
+
           <li>
             <NavLink
               to="/aichatbotreview"

@@ -8,6 +8,7 @@ import PrivateRoute from "./PrivateRoute";
 import FAQ from "../features/faq-management/components";
 import AIChatBotReview from "../features/ai-chatbot/components";
 import { auth } from "../services/firebase";
+import CategoryManagement from "../features/faq-management/components/CategoryManagement";
 
 function AppRoutes() {
   const [user, setUser] = useState(null);
@@ -47,6 +48,14 @@ function AppRoutes() {
           element={
             <PrivateRoute>
               <FAQ />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/categorymanagement"
+          element={
+            <PrivateRoute>
+              <CategoryManagement />
             </PrivateRoute>
           }
         />
