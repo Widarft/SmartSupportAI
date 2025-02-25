@@ -9,7 +9,7 @@ const FAQPageChat = () => {
   const [error, setError] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
     const loadFAQs = async () => {
@@ -38,9 +38,13 @@ const FAQPageChat = () => {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(selectedCategory === category ? null : category);
+  };
+
   const filteredFaqs = selectedCategory
     ? faqs.filter((faq) => faq.category === selectedCategory)
-    : faqs;
+    : [];
 
   if (loading) {
     return (
@@ -60,58 +64,66 @@ const FAQPageChat = () => {
 
   return (
     <div className="flex-1 overflow-y-auto p-4">
-      <h3 className="font-bold text-lg mb-4 text-blue-600">Pertanyaan Umum</h3>
+      <h3 className="font-bold text-lg text-blue-600">
+        Frequently Asked Questions
+      </h3>
+      <p className="mb-4 text-sm text-gray-700">
+        Select one of the categories below that you are looking for
+      </p>
 
       {categories.length > 0 && (
-        <div className="mb-4">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full p-2 border rounded-lg focus:outline-none focus:border-blue-600"
-          >
-            <option value="">Semua Kategori</option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {filteredFaqs.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">
-          {selectedCategory
-            ? `Tidak ada FAQ dalam kategori "${selectedCategory}"`
-            : "Belum ada FAQ tersedia. Silakan tambahkan FAQ melalui menu pengelolaan FAQ."}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredFaqs.map((faq) => (
+        <div className="mb-4 space-y-2">
+          {categories.map((category) => (
             <div
-              key={faq.id}
+              key={category}
               className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             >
               <button
-                onClick={() => toggleExpand(faq.id)}
+                onClick={() => handleCategoryClick(category)}
                 className="w-full p-4 text-left bg-white flex justify-between items-center"
               >
-                <h4 className="font-semibold text-gray-800">{faq.question}</h4>
-                {expandedId === faq.id ? (
+                <h4 className="font-semibold text-gray-800">{category}</h4>
+                {selectedCategory === category ? (
                   <FaChevronUp className="text-blue-600" />
                 ) : (
                   <FaChevronDown className="text-gray-400" />
                 )}
               </button>
 
-              {expandedId === faq.id && (
+              {selectedCategory === category && (
                 <div className="p-4 bg-gray-50 border-t">
-                  <p className="text-gray-600">{faq.answer}</p>
-                  {faq.category && (
-                    <div className="mt-2">
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                        {faq.category}
-                      </span>
+                  {filteredFaqs.length === 0 ? (
+                    <p className="text-gray-600">
+                      Tidak ada FAQ dalam kategori ini.
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {filteredFaqs.map((faq) => (
+                        <div
+                          key={faq.id}
+                          className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+                        >
+                          <button
+                            onClick={() => toggleExpand(faq.id)}
+                            className="w-full p-4 text-left bg-white flex justify-between items-center"
+                          >
+                            <h4 className="font-semibold text-gray-800">
+                              {faq.question}
+                            </h4>
+                            {expandedId === faq.id ? (
+                              <FaChevronUp className="text-blue-600" />
+                            ) : (
+                              <FaChevronDown className="text-gray-400" />
+                            )}
+                          </button>
+
+                          {expandedId === faq.id && (
+                            <div className="p-4 bg-gray-50 border-t">
+                              <p className="text-gray-600">{faq.answer}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
