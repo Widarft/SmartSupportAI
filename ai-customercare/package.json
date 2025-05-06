@@ -23,6 +23,7 @@
     "react-toastify": "^11.0.2",
     "react-tooltip": "^5.28.0",
     "sweetalert2": "^11.15.10",
+    "uuid": "^11.1.0",
     "yup": "^1.6.1",
     "zustand": "^5.0.3"
   },

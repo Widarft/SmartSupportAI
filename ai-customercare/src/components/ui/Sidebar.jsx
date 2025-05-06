@@ -35,6 +35,15 @@ const Sidebar = () => {
             </NavLink>
           </li>
 
+          <li>
+            <NavLink
+              to="/adminhistorychat"
+              className="block px-4 py-2 rounded hover:bg-gray-700"
+            >
+              History Chat
+            </NavLink>
+          </li>
+
           {/* FAQ Menu dengan Submenu */}
           <li>
             <button

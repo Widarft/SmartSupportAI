@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion"; // Tambahkan Framer Motion
+import { motion, AnimatePresence } from "framer-motion";
 import { useCustomerServiceAI } from "../services/useCustomerServiceAI";
 import { BsChatDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import { Tooltip } from "react-tooltip";
+import { getCustomerChatHistory } from "../services/ chatHistoryService";
+import { generateCustomerId } from "../utils/customerUtils";
 
 import HomePageChat from "./HomePageChat";
 import ChatPage from "./ChatPage";
@@ -13,16 +15,34 @@ import TabBarChat from "./TabBarChar";
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activePage, setActivePage] = useState("home");
-  const [messages, setMessages] = useState(() => {
-    const savedMessages = localStorage.getItem("chatHistory");
-    return savedMessages ? JSON.parse(savedMessages) : [];
-  });
+  const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const { handleSend, isLoading } = useCustomerServiceAI();
 
   useEffect(() => {
-    localStorage.setItem("chatHistory", JSON.stringify(messages));
-  }, [messages]);
+    const customerId =
+      localStorage.getItem("customerId") || generateCustomerId();
+
+    if (!localStorage.getItem("customerId")) {
+      localStorage.setItem("customerId", customerId);
+    }
+
+    const unsubscribe = getCustomerChatHistory(
+      customerId,
+      (firebaseMessages) => {
+        const formattedMessages = firebaseMessages.map((msg) => ({
+          user: msg.sender === "user" ? "User" : "AI Assistant",
+          message: msg.message,
+          sender: msg.sender,
+          timestamp: msg.timestamp,
+          time: msg.timestamp ? msg.timestamp.toLocaleTimeString() : "",
+        }));
+        setMessages(formattedMessages);
+      }
+    );
+
+    return unsubscribe;
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

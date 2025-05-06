@@ -9,6 +9,7 @@ import FAQ from "../features/faq-management/components";
 import AIChatBotReview from "../features/ai-chatbot/components";
 import { auth } from "../services/firebase";
 import CategoryManagement from "../features/faq-management/components/CategoryManagement";
+import AdminHistoryChat from "../features/admin-history-chat/components";
 
 function AppRoutes() {
   const [user, setUser] = useState(null);
@@ -64,6 +65,14 @@ function AppRoutes() {
           element={
             <PrivateRoute>
               <AIChatBotReview />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/adminhistorychat"
+          element={
+            <PrivateRoute>
+              <AdminHistoryChat />
             </PrivateRoute>
           }
         />
