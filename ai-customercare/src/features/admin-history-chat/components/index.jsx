@@ -4,7 +4,7 @@ import ChatHistoryPage from "./ChatHistoryPage";
 
 const AdminHistoryChat = () => {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
       <ChatHistoryPage />
     </div>

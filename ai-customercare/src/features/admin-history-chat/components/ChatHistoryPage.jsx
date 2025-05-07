@@ -1,221 +1,148 @@
 import React, { useState, useEffect } from "react";
-import {
-  getAllChatHistory,
-  getUniqueCustomers,
-  getCustomerChat,
-} from "../services/adminChatHistoryService";
-import { FaSearch, FaUser, FaRobot, FaFilter } from "react-icons/fa";
-import ReactMarkdown from "react-markdown";
+import { FaUser, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { getPaginatedCustomers } from "../services/adminChatHistoryService";
 
 const ChatHistoryPage = () => {
-  const [allChats, setAllChats] = useState([]);
-  const [filteredChats, setFilteredChats] = useState([]);
   const [customers, setCustomers] = useState([]);
-  const [selectedCustomer, setSelectedCustomer] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Get all chat history
-    const unsubscribe = getAllChatHistory((chats) => {
-      setAllChats(chats);
-      setFilteredChats(chats);
-      setLoading(false);
-    });
-
-    // Get all unique customers
     const loadCustomers = async () => {
-      const customerList = await getUniqueCustomers();
-      setCustomers(customerList);
+      setLoading(true);
+      try {
+        console.log("Loading customers for page:", currentPage);
+        const { customers, total } = await getPaginatedCustomers(
+          currentPage,
+          pageSize
+        );
+        console.log("Loaded customers:", customers);
+        setCustomers(customers);
+        setTotalItems(total);
+      } catch (error) {
+        console.error("Error loading customers:", error);
+        setError("Gagal memuat daftar customer");
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadCustomers();
+  }, [currentPage, pageSize]);
 
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    // Filter chats when customer or search query changes
-    let result = [...allChats];
-
-    // Filter by customer ID
-    if (selectedCustomer) {
-      const unsubscribe = getCustomerChat(selectedCustomer, (chats) => {
-        result = chats;
-
-        // Then apply search filter
-        if (searchQuery) {
-          result = result.filter((chat) =>
-            chat.message.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-        }
-
-        setFilteredChats(result);
-      });
-
-      return () => unsubscribe();
-    } else {
-      // Just apply search filter if no customer selected
-      if (searchQuery) {
-        result = result.filter((chat) =>
-          chat.message.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-
-      setFilteredChats(result);
+  const handleCustomerClick = (customerId) => {
+    if (!customerId) {
+      console.error("Customer ID tidak valid:", customerId);
+      return;
     }
-  }, [selectedCustomer, searchQuery, allChats]);
 
-  // Group chats by customerId and date
-  const groupChatsByCustomer = () => {
-    const groupedChats = {};
-
-    filteredChats.forEach((chat) => {
-      const date = chat.timestamp.toLocaleDateString();
-      const key = `${chat.customerId}-${date}`;
-
-      if (!groupedChats[key]) {
-        groupedChats[key] = {
-          customerId: chat.customerId,
-          date: date,
-          chats: [],
-        };
-      }
-
-      groupedChats[key].chats.push(chat);
-    });
-
-    // Sort by date (newest first)
-    return Object.values(groupedChats).sort((a, b) => {
-      return new Date(b.date) - new Date(a.date);
-    });
+    console.log("Navigating to customer details:", customerId);
+    // Gunakan URL yang benar untuk detail chat
+    navigate(`/adminhistorychat/${customerId}`);
   };
 
-  const handleCustomerFilter = (customerId) => {
-    setSelectedCustomer(customerId === selectedCustomer ? "" : customerId);
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleNextPage = () => {
+    if (currentPage * pageSize < totalItems) {
+      setCurrentPage(currentPage + 1);
+    }
   };
 
-  const handleClearFilters = () => {
-    setSelectedCustomer("");
-    setSearchQuery("");
-  };
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const hasMore = currentPage * pageSize < totalItems;
+
+  if (error) {
+    return <div className="p-4 text-red-500">{error}</div>;
+  }
 
   return (
-    <div className="p-6 bg-gray-100">
-      <h1 className="text-2xl font-bold mb-6">Chat History Monitoring</h1>
-
-      {/* Filters */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0">
-          <div className="flex-1 relative">
-            <FaSearch className="absolute left-3 top-3 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search messages..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="flex-1">
-            <div className="relative">
-              <FaFilter className="absolute left-3 top-3 text-gray-400" />
-              <select
-                value={selectedCustomer}
-                onChange={(e) => handleCustomerFilter(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-              >
-                <option value="">All Customers</option>
-                {customers.map((customerId) => (
-                  <option key={customerId} value={customerId}>
-                    Customer: {customerId.substring(0, 8)}...
-                  </option>
-                ))}
-              </select>
+    <div className="flex min-h-screen min-w-[1190px]">
+      {/* Main Content */}
+      <div className="flex-1 p-6 bg-gray-100">
+        <div className="flex justify-center">
+          <div className="bg-white rounded-lg shadow overflow-hidden min-w-[1100px]">
+            <div className="p-4 border-b">
+              <h3 className="text-lg font-medium">Customer List</h3>
             </div>
-          </div>
 
-          <button
-            onClick={handleClearFilters}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            Clear Filters
-          </button>
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            ) : (
+              <>
+                <div className="divide-y">
+                  {customers.length > 0 ? (
+                    customers.map((customerId, index) => (
+                      <div
+                        key={customerId || index}
+                        onClick={() => handleCustomerClick(customerId)}
+                        className="p-4 hover:bg-gray-50 cursor-pointer flex items-center"
+                      >
+                        <FaUser className="mr-3 text-blue-500" />
+                        <span className="font-medium">
+                          Customer: {customerId || "Unknown"}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      Tidak ada data customer
+                    </div>
+                  )}
+                </div>
+
+                {/* Pagination controls */}
+                <div className="flex justify-between items-center p-4 border-t">
+                  <div className="text-sm text-gray-600">
+                    Show{" "}
+                    {customers.length ? (currentPage - 1) * pageSize + 1 : 0} -{" "}
+                    {Math.min(currentPage * pageSize, totalItems)} of{" "}
+                    {totalItems} customers
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      className={`px-3 py-1 rounded ${
+                        currentPage > 1
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-500"
+                      }`}
+                      onClick={handlePrevPage}
+                      disabled={currentPage <= 1}
+                    >
+                      <FaChevronLeft />
+                    </button>
+                    <span className="px-3 py-1">
+                      Page {currentPage} of {totalPages || 1}
+                    </span>
+                    <button
+                      className={`px-3 py-1 rounded ${
+                        hasMore
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-500"
+                      }`}
+                      onClick={handleNextPage}
+                      disabled={!hasMore}
+                    >
+                      <FaChevronRight />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Chat History Display */}
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      ) : filteredChats.length === 0 ? (
-        <div className="bg-white p-8 rounded-lg shadow text-center">
-          <p className="text-lg text-gray-500">No chat history found.</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {groupChatsByCustomer().map((group) => (
-            <div
-              key={`${group.customerId}-${group.date}`}
-              className="bg-white rounded-lg shadow overflow-hidden"
-            >
-              {/* Customer Header */}
-              <div className="bg-blue-600 text-white p-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-medium">
-                    Customer ID: {group.customerId}
-                  </h3>
-                  <span className="text-sm">{group.date}</span>
-                </div>
-              </div>
-
-              {/* Chat Messages */}
-              <div className="p-4 space-y-4">
-                {group.chats
-                  .sort((a, b) => a.timestamp - b.timestamp)
-                  .map((chat) => (
-                    <div
-                      key={chat.id}
-                      className={`flex ${
-                        chat.sender === "user" ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[70%] p-3 rounded-lg flex ${
-                          chat.sender === "user"
-                            ? "bg-blue-100 text-blue-900 rounded-br-none"
-                            : "bg-gray-100 text-gray-800 rounded-bl-none"
-                        }`}
-                      >
-                        <div className="mr-2 mt-1">
-                          {chat.sender === "user" ? (
-                            <FaUser className="text-blue-600" />
-                          ) : (
-                            <FaRobot className="text-gray-600" />
-                          )}
-                        </div>
-                        <div>
-                          <ReactMarkdown className="text-sm whitespace-pre-wrap">
-                            {chat.message}
-                          </ReactMarkdown>
-                          <span className="text-xs text-gray-500 mt-1 block">
-                            {chat.formattedTime}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

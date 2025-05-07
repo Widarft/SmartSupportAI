@@ -206,8 +206,10 @@ const FAQManagement = () => {
   const totalPages = Math.ceil(totalItems / pageSize);
 
   return (
-    <div className="p-6 max-w-[1440px] bg-white rounded-lg">
-      <h2 className="text-2xl font-semibold mb-4">FAQ Management</h2>
+    <div className="p-6 max-w-[1440px] bg-white rounded-lg min-w-[1190px]">
+      <h2 className="text-2xl font-semibold mb-4 bg-gray-100">
+        FAQ Management
+      </h2>
 
       <div className="flex justify-between mb-4">
         <select

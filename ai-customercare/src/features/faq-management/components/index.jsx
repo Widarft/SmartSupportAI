@@ -5,7 +5,7 @@ import Sidebar from "../../../components/ui/Sidebar";
 const FAQ = () => {
   return (
     <div>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen bg-gray-100">
         <Sidebar />
         <FAQManagement />
       </div>

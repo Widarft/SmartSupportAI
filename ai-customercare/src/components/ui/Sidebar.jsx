@@ -17,7 +17,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 min-h-screen bg-gray-900 text-white flex flex-col">
+    <div className="min-w-64 max-w-64 min-h-screen bg-gray-900 text-white flex flex-col">
       {/* Logo */}
       <div className="p-4 text-center text-xl font-bold border-b border-gray-700">
         Smart Support AI

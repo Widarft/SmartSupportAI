@@ -7,107 +7,120 @@ import {
   limit,
   getDocs,
   where,
+  getCountFromServer,
 } from "firebase/firestore";
 
 /**
- * Mendapatkan semua chat history untuk admin
- * @param {(chats: Array) => void} callback - Fungsi untuk handle data update
+ * Mendapatkan daftar customer dengan pagination
+ * @param {number} page - Halaman saat ini
+ * @param {number} pageSize - Jumlah item per halaman
+ * @returns {Promise<{customers: Array, total: number}>} - Data customer dan total
  */
-export const getAllChatHistory = (callback) => {
-  const q = query(collection(db, "chats"), orderBy("timestamp", "desc"));
+export const getPaginatedCustomers = async (page, pageSize) => {
+  try {
+    const customersRef = collection(db, "chats");
+    const q = query(customersRef);
 
-  return onSnapshot(q, (querySnapshot) => {
-    const chats = [];
+    // Get total count
+    const snapshot = await getCountFromServer(q);
+    const total = snapshot.data().count;
+
+    // Get unique customer IDs
+    const querySnapshot = await getDocs(q);
+    const customerIds = new Set();
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      const timestamp = data.timestamp?.toDate() || new Date();
-
-      chats.push({
-        id: doc.id,
-        message: data.message,
-        sender: data.sender,
-        customerId: data.customerId,
-        timestamp: timestamp,
-        formattedTime: timestamp.toLocaleString(),
-      });
+      // Pastikan customerId ada dan tidak undefined/null
+      if (data.customerId) {
+        customerIds.add(data.customerId);
+      }
     });
-    callback(chats);
-  });
-};
 
-/**
- * Mendapatkan 10 pesan terbaru untuk dashboard
- * @param {(chats: Array) => void} callback - Fungsi untuk handle data update
- */
-export const getRecentChats = (callback) => {
-  const q = query(
-    collection(db, "chats"),
-    orderBy("timestamp", "desc"),
-    limit(10)
-  );
+    const uniqueCustomers = Array.from(customerIds);
 
-  return onSnapshot(q, (querySnapshot) => {
-    const chats = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const timestamp = data.timestamp?.toDate() || new Date();
+    // Apply pagination
+    const startIndex = (page - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedCustomers = uniqueCustomers.slice(startIndex, endIndex);
 
-      chats.push({
-        id: doc.id,
-        message: data.message,
-        sender: data.sender,
-        customerId: data.customerId,
-        timestamp: timestamp,
-        formattedTime: timestamp.toLocaleString(),
-      });
-    });
-    callback(chats);
-  });
-};
-
-/**
- * Mendapatkan semua ID customer unik
- * @returns {Promise<Array>} - Array of unique customer IDs
- */
-export const getUniqueCustomers = async () => {
-  const q = query(collection(db, "chats"));
-  const querySnapshot = await getDocs(q);
-
-  const customerIds = new Set();
-  querySnapshot.forEach((doc) => {
-    customerIds.add(doc.data().customerId);
-  });
-
-  return Array.from(customerIds);
+    return {
+      customers: paginatedCustomers,
+      total: uniqueCustomers.length,
+    };
+  } catch (error) {
+    console.error("Error in getPaginatedCustomers:", error);
+    throw error;
+  }
 };
 
 /**
  * Mendapatkan chat history untuk customer tertentu
  * @param {string} customerId - ID customer
  * @param {(chats: Array) => void} callback - Fungsi untuk handle data update
+ * @returns {Function} - Unsubscribe function
  */
 export const getCustomerChat = (customerId, callback) => {
-  const q = query(
-    collection(db, "chats"),
-    where("customerId", "==", customerId),
-    orderBy("timestamp", "asc")
-  );
+  if (!customerId) {
+    console.error("Customer ID is required");
+    callback([]);
+    return () => {};
+  }
 
-  return onSnapshot(q, (querySnapshot) => {
-    const chats = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const timestamp = data.timestamp?.toDate() || new Date();
+  console.log("Setting up listener for customer:", customerId);
 
-      chats.push({
-        id: doc.id,
-        message: data.message,
-        sender: data.sender,
-        customerId: data.customerId,
-        timestamp: timestamp,
-        formattedTime: timestamp.toLocaleString(),
-      });
-    });
-    callback(chats);
-  });
+  try {
+    // Verifikasi struktur database terlebih dahulu
+    console.log("Collection path:", "chats");
+
+    const chatsRef = collection(db, "chats");
+    const q = query(
+      chatsRef,
+      where("customerId", "==", customerId),
+      orderBy("timestamp", "asc")
+    );
+
+    console.log("Query created successfully");
+
+    return onSnapshot(
+      q,
+      (querySnapshot) => {
+        console.log("Snapshot received, document count:", querySnapshot.size);
+        const chats = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          console.log("Document data:", doc.id, data);
+
+          // Handle timestamp with fallback
+          let timestamp;
+          try {
+            timestamp = data.timestamp?.toDate() || new Date();
+          } catch (err) {
+            console.warn(
+              "Error converting timestamp, using current date:",
+              err
+            );
+            timestamp = new Date();
+          }
+
+          chats.push({
+            id: doc.id,
+            message: data.message || "",
+            sender: data.sender || "unknown",
+            customerId: data.customerId || customerId, // Fallback to parameter
+            timestamp: timestamp,
+            formattedTime: timestamp.toLocaleString(),
+          });
+        });
+        callback(chats);
+      },
+      (error) => {
+        console.error("Error in snapshot listener:", error);
+        callback([]);
+      }
+    );
+  } catch (err) {
+    console.error("Error setting up chat listener:", err);
+    callback([]);
+    return () => {};
+  }
 };

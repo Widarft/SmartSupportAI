@@ -10,6 +10,7 @@ import AIChatBotReview from "../features/ai-chatbot/components";
 import { auth } from "../services/firebase";
 import CategoryManagement from "../features/faq-management/components/CategoryManagement";
 import AdminHistoryChat from "../features/admin-history-chat/components";
+import DetailChatHistoryPage from "../features/admin-history-chat/components/DetailChatHistoryPage";
 
 function AppRoutes() {
   const [user, setUser] = useState(null);
@@ -76,6 +77,14 @@ function AppRoutes() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/adminhistorychat/:customerId"
+          element={
+            <PrivateRoute>
+              <DetailChatHistoryPage />
+            </PrivateRoute>
+          }
+        ></Route>
       </Routes>
     </BrowserRouter>
   );
