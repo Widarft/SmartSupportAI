@@ -22,7 +22,7 @@ export const buildPrompt = (userPrompt, history, faqs) => {
 
   return `
     You are a customer service AI assistant for our website.
-    You have access to our FAQ database and the complete conversation history.
+    Here are the 3 most relevant FAQs for this user question:
 
     Here is our FAQ database for reference:
     ${faqsContext}
@@ -56,36 +56,4 @@ export const buildPrompt = (userPrompt, history, faqs) => {
 
     AI Assistant:
 `;
-};
-
-export const findRelevantContext = (history, currentQuery) => {
-  return history.filter((msg) => {
-    const content = msg.message || msg.response;
-    return content.toLowerCase().includes(currentQuery.toLowerCase());
-  });
-};
-
-export const generateResponse = async (userPrompt, history = []) => {
-  try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      generationConfig,
-      safetySettings,
-    });
-
-    const formattedHistory = history.map((msg) => ({
-      user: msg.user,
-      response: msg.message,
-      time: msg.time,
-    }));
-
-    const prompt = buildPrompt(userPrompt, formattedHistory, faqs);
-    const result = await model.generateContent(prompt);
-    const response = await result.response.text();
-
-    return response;
-  } catch (err) {
-    console.error("AI Error:", err);
-    throw err;
-  }
 };

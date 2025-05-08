@@ -5,6 +5,7 @@ import { generationConfig, safetySettings } from "../config/geminiConfig";
 import { getUserFAQs } from "../../faq-management/services/faqService";
 import { saveChat } from "./ chatHistoryService";
 import { generateCustomerId } from "../utils/customerUtils";
+import { findTopRelevantFAQs } from "../utils/faqMatcher";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
@@ -26,10 +27,6 @@ export const useCustomerServiceAI = () => {
     setError(null);
 
     try {
-      if (!import.meta.env.VITE_GEMINI_API_KEY) {
-        throw new Error("API Key is not defined. Check your .env file.");
-      }
-
       const model = genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
         generationConfig,
@@ -39,9 +36,13 @@ export const useCustomerServiceAI = () => {
       const formattedHistory = history.map((msg) => ({
         user: msg.user || (msg.sender === "user" ? "User" : "AI Assistant"),
         response: msg.message,
+        time: msg.time,
       }));
 
-      const prompt = buildPrompt(userPrompt, formattedHistory, faqs);
+      // 🔍 Ambil 3 FAQ paling relevan
+      const relevantFaqs = findTopRelevantFAQs(userPrompt, faqs);
+
+      const prompt = buildPrompt(userPrompt, formattedHistory, relevantFaqs);
       const result = await model.generateContent(prompt);
       const response = await result.response.text();
 
@@ -60,7 +61,6 @@ export const useCustomerServiceAI = () => {
 
     const customerId =
       localStorage.getItem("customerId") || generateCustomerId();
-
     const currentTime = new Date();
 
     const userMessage = {
