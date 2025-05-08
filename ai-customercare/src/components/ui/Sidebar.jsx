@@ -1,11 +1,30 @@
-import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import {
+  FaChevronDown,
+  FaChevronUp,
+  FaHome,
+  FaHistory,
+  FaRobot,
+  FaQuestionCircle,
+  FaListAlt,
+  FaQuestion,
+} from "react-icons/fa";
 import { logoutUser } from "../../features/auth/services/authService";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [faqOpen, setFaqOpen] = useState(false);
+
+  useEffect(() => {
+    if (
+      location.pathname.includes("/faqmanagement") ||
+      location.pathname.includes("/categorymanagement")
+    ) {
+      setFaqOpen(true);
+    }
+  }, [location.pathname]);
 
   const handleLogout = async () => {
     try {
@@ -25,12 +44,17 @@ const Sidebar = () => {
 
       {/* Menu Navigasi */}
       <nav className="flex-1 p-4">
-        <ul>
+        <ul className="space-y-1">
           <li>
             <NavLink
               to="/"
-              className="block px-4 py-2 rounded hover:bg-gray-700"
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-4 py-2 rounded ${
+                  isActive ? "bg-gray-700 font-semibold" : "hover:bg-gray-500"
+                }`
+              }
             >
+              <FaHome />
               Dashboard
             </NavLink>
           </li>
@@ -38,8 +62,13 @@ const Sidebar = () => {
           <li>
             <NavLink
               to="/adminhistorychat"
-              className="block px-4 py-2 rounded hover:bg-gray-700"
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-4 py-2 rounded ${
+                  isActive ? "bg-gray-700 font-semibold" : "hover:bg-gray-500"
+                }`
+              }
             >
+              <FaHistory />
               History Chat
             </NavLink>
           </li>
@@ -48,28 +77,44 @@ const Sidebar = () => {
           <li>
             <button
               onClick={() => setFaqOpen(!faqOpen)}
-              className="w-full flex justify-between items-center px-4 py-2 rounded hover:bg-gray-700"
+              className="w-full flex justify-between items-center px-4 py-2 rounded hover:bg-gray-500"
             >
-              <span>FAQ</span>
+              <div className="flex items-center gap-2">
+                <FaQuestionCircle />
+                FAQ
+              </div>
               {faqOpen ? <FaChevronUp /> : <FaChevronDown />}
             </button>
 
-            {/* Submenu FAQ */}
             {faqOpen && (
-              <ul className="ml-4 mt-1">
+              <ul className="ml-6 mt-1 space-y-1">
                 <li>
                   <NavLink
                     to="/faqmanagement"
-                    className="block px-4 py-2 rounded hover:bg-gray-700"
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-4 py-2 rounded ${
+                        isActive
+                          ? "bg-gray-700 font-semibold"
+                          : "hover:bg-gray-500"
+                      }`
+                    }
                   >
+                    <FaQuestion />
                     FAQ Management
                   </NavLink>
                 </li>
                 <li>
                   <NavLink
                     to="/categorymanagement"
-                    className="block px-4 py-2 rounded hover:bg-gray-700"
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-4 py-2 rounded ${
+                        isActive
+                          ? "bg-gray-700 font-semibold"
+                          : "hover:bg-gray-500"
+                      }`
+                    }
                   >
+                    <FaListAlt />
                     Category Management
                   </NavLink>
                 </li>
@@ -80,8 +125,13 @@ const Sidebar = () => {
           <li>
             <NavLink
               to="/aichatbotreview"
-              className="block px-4 py-2 rounded hover:bg-gray-700"
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-4 py-2 rounded ${
+                  isActive ? "bg-gray-700 font-semibold" : "hover:bg-gray-500"
+                }`
+              }
             >
+              <FaRobot />
               Chatbot Review
             </NavLink>
           </li>

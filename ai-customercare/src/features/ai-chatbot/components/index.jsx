@@ -1,12 +1,12 @@
 import React from "react";
-import ChatBot from "./ChatBot";
 import Sidebar from "../../../components/ui/Sidebar";
+import ChatBotReview from "./ChatBotReview";
 
 const AIChatBotReview = () => {
   return (
-    <div>
+    <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
-      <ChatBot />
+      <ChatBotReview />
     </div>
   );
 };

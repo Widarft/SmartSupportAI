@@ -116,7 +116,9 @@ const ChatBot = () => {
             >
               {/* Header Chatbot */}
               <div className="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
-                <h3 className="font-semibold">Customer Service Assistant</h3>
+                <h3 className="text-lg font-semibold">
+                  Customer Service Assistant
+                </h3>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsOpen(false)}

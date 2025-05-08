@@ -146,9 +146,10 @@ const DetailChatHistoryPage = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6 bg-gray-100 max-h-screen overflow-y-auto">
+        <h1 className="text-3xl font-semibold mb-6">Chat History</h1>
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="p-4 border-b flex justify-between items-center">
-            <h3 className="text-lg font-medium">Chat History</h3>
+            <h3 className="text-lg font-medium">Chatting</h3>
             <div className="relative w-64">
               <FaSearch className="absolute left-3 top-3 text-gray-400" />
               <input
