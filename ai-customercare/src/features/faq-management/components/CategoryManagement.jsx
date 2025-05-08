@@ -118,7 +118,10 @@ const CategoryManagement = () => {
                 </thead>
                 <tbody>
                   {categories.map((category, index) => (
-                    <tr key={category.id} className="text-center">
+                    <tr
+                      key={category.id}
+                      className="text-center odd:bg-white even:bg-gray-100"
+                    >
                       <td className="border p-2">{index + 1}</td>
                       <td className="border p-2 text-left">{category.name}</td>
                       <td className="p-2 flex justify-center space-x-2">

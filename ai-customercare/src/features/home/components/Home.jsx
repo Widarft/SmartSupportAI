@@ -8,6 +8,7 @@ import {
   getRecentMessages,
 } from "../services/dashboardServices";
 import { FaUsers, FaQuestionCircle, FaTags } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -17,6 +18,12 @@ const Home = () => {
     customers: 0,
     recentMessages: [],
   });
+  const navigate = useNavigate();
+
+  const handleCustomerClick = (customerId) => {
+    if (!customerId) return;
+    navigate(`/adminhistorychat/${customerId}`);
+  };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
@@ -47,7 +54,7 @@ const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-cyan-400 text-sky-900 py-4 pl-6 pr-10 rounded-lg shadow flex items-center justify-between transition-transform duration-300 hover:scale-105 hover:-translate-y-1">
             <div>
-              <h2 className="text-xl font-semibold">Jumlah Pelanggan</h2>
+              <h2 className="text-xl font-semibold">Jumlah Pengguna</h2>
               <p className="text-3xl font-bold">{stats.customers}</p>
             </div>
             <div className="text-sky-900 text-4xl">
@@ -81,7 +88,11 @@ const Home = () => {
           </h2>
           <ul>
             {stats.recentMessages.map((msg) => (
-              <li key={msg.id} className="mb-2 border-b pb-2">
+              <li
+                key={msg.id}
+                className="mb-2 border-b pb-2 cursor-pointer hover:bg-gray-100 p-2 rounded transition"
+                onClick={() => handleCustomerClick(msg.customerId)}
+              >
                 <p className="font-semibold">{msg.customerId || "Unknown"}</p>
                 <p className="text-sm text-gray-500">
                   {msg.timestamp?.toDate

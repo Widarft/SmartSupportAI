@@ -279,7 +279,10 @@ const FAQManagement = () => {
                 </tr>
               ) : (
                 faqs.map((faq, index) => (
-                  <tr key={faq.id} className="text-center">
+                  <tr
+                    key={faq.id}
+                    className="text-center odd:bg-white even:bg-gray-100"
+                  >
                     <td className="border p-2">
                       {(currentPage - 1) * pageSize + index + 1}
                     </td>
