@@ -4,33 +4,23 @@ import {
   query,
   onSnapshot,
   orderBy,
-  limit,
   getDocs,
   where,
   getCountFromServer,
 } from "firebase/firestore";
 
-/**
- * Mendapatkan daftar customer dengan pagination
- * @param {number} page - Halaman saat ini
- * @param {number} pageSize - Jumlah item per halaman
- * @returns {Promise<{customers: Array, total: number}>} - Data customer dan total
- */
 export const getPaginatedCustomers = async (page, pageSize) => {
   try {
     const customersRef = collection(db, "chats");
     const q = query(customersRef);
 
-    // Get total count
     const snapshot = await getCountFromServer(q);
     const total = snapshot.data().count;
 
-    // Get unique customer IDs
     const querySnapshot = await getDocs(q);
     const customerIds = new Set();
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      // Pastikan customerId ada dan tidak undefined/null
       if (data.customerId) {
         customerIds.add(data.customerId);
       }
@@ -38,7 +28,6 @@ export const getPaginatedCustomers = async (page, pageSize) => {
 
     const uniqueCustomers = Array.from(customerIds);
 
-    // Apply pagination
     const startIndex = (page - 1) * pageSize;
     const endIndex = startIndex + pageSize;
     const paginatedCustomers = uniqueCustomers.slice(startIndex, endIndex);
@@ -53,12 +42,6 @@ export const getPaginatedCustomers = async (page, pageSize) => {
   }
 };
 
-/**
- * Mendapatkan chat history untuk customer tertentu
- * @param {string} customerId - ID customer
- * @param {(chats: Array) => void} callback - Fungsi untuk handle data update
- * @returns {Function} - Unsubscribe function
- */
 export const getCustomerChat = (customerId, callback) => {
   if (!customerId) {
     console.error("Customer ID is required");
@@ -69,7 +52,6 @@ export const getCustomerChat = (customerId, callback) => {
   console.log("Setting up listener for customer:", customerId);
 
   try {
-    // Verifikasi struktur database terlebih dahulu
     console.log("Collection path:", "chats");
 
     const chatsRef = collection(db, "chats");
@@ -90,7 +72,6 @@ export const getCustomerChat = (customerId, callback) => {
           const data = doc.data();
           console.log("Document data:", doc.id, data);
 
-          // Handle timestamp with fallback
           let timestamp;
           try {
             timestamp = data.timestamp?.toDate() || new Date();
@@ -106,7 +87,7 @@ export const getCustomerChat = (customerId, callback) => {
             id: doc.id,
             message: data.message || "",
             sender: data.sender || "unknown",
-            customerId: data.customerId || customerId, // Fallback to parameter
+            customerId: data.customerId || customerId,
             timestamp: timestamp,
             formattedTime: timestamp.toLocaleString(),
           });

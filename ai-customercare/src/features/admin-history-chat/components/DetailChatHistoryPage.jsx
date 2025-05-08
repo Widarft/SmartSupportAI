@@ -1,29 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaUser, FaRobot, FaSearch, FaArrowLeft } from "react-icons/fa";
+import {
+  FaUser,
+  FaRobot,
+  FaSearch,
+  FaArrowLeft,
+  FaFileAlt,
+} from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
 import { getCustomerChat } from "../services/adminChatHistoryService";
+import { generateChatSummary } from "../services/summaryService";
 
 const DetailChatHistoryPage = () => {
-  // Gunakan ID hardcoded untuk testing
   const { customerId: urlCustomerId } = useParams();
-  const customerId = urlCustomerId || "customer123"; // Ganti dengan ID yang Anda tahu valid
-
+  const customerId = urlCustomerId || "customer123";
   const navigate = useNavigate();
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState(null);
 
-  console.log(
-    "Rendering DetailChatHistoryPage with customerId:",
-    customerId,
-    "URL customerId:",
-    urlCustomerId
-  );
+  const [summary, setSummary] = useState("");
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [summaryError, setSummaryError] = useState(null);
+
+  const chatEndRef = useRef(null);
 
   useEffect(() => {
-    // Validasi customerId sebelum melanjutkan
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chats]);
+
+  useEffect(() => {
     if (!customerId) {
       setError("Customer ID tidak ditemukan");
       setLoading(false);
@@ -39,7 +48,6 @@ const DetailChatHistoryPage = () => {
         setLoading(false);
       });
 
-      // Cleanup subscription on unmount
       return () => {
         console.log("Unsubscribing from chat listener");
         if (typeof unsubscribe === "function") {
@@ -75,11 +83,9 @@ const DetailChatHistoryPage = () => {
     chat.message.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Group chats by date
   const groupChatsByDate = () => {
     const groupedChats = {};
     filteredChats.forEach((chat) => {
-      // Make sure timestamp is a Date object
       const timestamp =
         chat.timestamp instanceof Date
           ? chat.timestamp
@@ -92,6 +98,23 @@ const DetailChatHistoryPage = () => {
       groupedChats[date].push(chat);
     });
     return groupedChats;
+  };
+
+  const handleGenerateSummary = async () => {
+    if (!chats.length) return;
+
+    setIsGeneratingSummary(true);
+    setSummaryError(null);
+
+    try {
+      const result = await generateChatSummary(chats);
+      setSummary(result);
+    } catch (error) {
+      setSummaryError("Gagal menghasilkan kesimpulan");
+      console.error("Summary generation error:", error);
+    } finally {
+      setIsGeneratingSummary(false);
+    }
   };
 
   return (
@@ -107,6 +130,18 @@ const DetailChatHistoryPage = () => {
         </button>
         <h2 className="text-xl font-bold">Chat Details</h2>
         <p className="text-sm text-gray-300 mt-2">Customer: {customerId}</p>
+        <button
+          onClick={handleGenerateSummary}
+          disabled={isGeneratingSummary || chats.length === 0}
+          className={`mt-4 w-full py-2 rounded-lg flex items-center justify-center ${
+            isGeneratingSummary
+              ? "bg-gray-600"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
+        >
+          <FaFileAlt className="mr-2" />
+          {isGeneratingSummary ? "Generating..." : "Generate Summary"}
+        </button>
       </div>
 
       {/* Main Content */}
@@ -132,7 +167,7 @@ const DetailChatHistoryPage = () => {
             </div>
           ) : (
             <>
-              <div className="p-4">
+              <div className="p-4 max-h-[700px] overflow-auto">
                 {Object.entries(groupChatsByDate()).map(([date, chats]) => (
                   <div key={date} className="mb-6">
                     <div className="text-sm font-medium text-gray-500 mb-2 flex justify-center">
@@ -180,10 +215,28 @@ const DetailChatHistoryPage = () => {
                     </div>
                   </div>
                 ))}
+                <div ref={chatEndRef} />
               </div>
             </>
           )}
         </div>
+        {summary && (
+          <div className="mt-6 bg-white rounded-lg shadow p-4">
+            <h3 className="text-lg font-medium mb-2 flex items-center">
+              <FaFileAlt className="mr-2 text-blue-500" />
+              Chat Summary
+            </h3>
+            <div className="p-4 bg-blue-50 rounded">
+              <ReactMarkdown className="prose">{summary}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+
+        {summaryError && (
+          <div className="mt-4 p-3 bg-red-100 text-red-700 rounded">
+            {summaryError}
+          </div>
+        )}
       </div>
     </div>
   );
