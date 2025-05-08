@@ -39,8 +39,7 @@ export const useCustomerServiceAI = () => {
         time: msg.time,
       }));
 
-      // 🔍 Ambil 3 FAQ paling relevan
-      const relevantFaqs = findTopRelevantFAQs(userPrompt, faqs);
+      const relevantFaqs = await findTopRelevantFAQs(userPrompt, faqs);
 
       const prompt = buildPrompt(userPrompt, formattedHistory, relevantFaqs);
       const result = await model.generateContent(prompt);
