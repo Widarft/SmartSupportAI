@@ -8,9 +8,6 @@ import {
   where,
   getCountFromServer,
   limit,
-  startAfter,
-  startAt,
-  endAt,
   Timestamp,
 } from "firebase/firestore";
 

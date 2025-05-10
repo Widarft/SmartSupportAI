@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import LandingPage from "../features/landing-page";
+import WelcomePage from "../features/landing-page/components/WelcomePage";
 import Register from "../features/auth/components/Register";
 import Login from "../features/auth/components/Login";
 import Home from "../features/home/components/Home";
@@ -32,7 +32,7 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/landingpage" element={<LandingPage />} />
+        <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
 

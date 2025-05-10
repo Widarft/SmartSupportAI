@@ -19,7 +19,7 @@ const PrivateRoute = ({ children }) => {
     return <div>Loading...</div>;
   }
 
-  return user ? children : <Navigate to="/landingpage" />;
+  return user ? children : <Navigate to="/welcome" />;
 };
 
 export default PrivateRoute;

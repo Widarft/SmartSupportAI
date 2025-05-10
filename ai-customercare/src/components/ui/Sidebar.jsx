@@ -29,7 +29,7 @@ const Sidebar = () => {
   const handleLogout = async () => {
     try {
       await logoutUser();
-      navigate("/landingpage");
+      navigate("/welcome");
     } catch (error) {
       console.error("Logout failed:", error);
     }
