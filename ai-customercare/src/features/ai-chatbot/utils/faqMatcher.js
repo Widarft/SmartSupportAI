@@ -1,4 +1,4 @@
-export const findTopRelevantFAQs = (userPrompt, faqs, topN = 3) => {
+export const findTopRelevantFAQs = (userPrompt, faqs, topN = 5) => {
   const similarityScore = (str1, str2) => {
     const words1 = str1.toLowerCase().split(/\s+/);
     const words2 = str2.toLowerCase().split(/\s+/);

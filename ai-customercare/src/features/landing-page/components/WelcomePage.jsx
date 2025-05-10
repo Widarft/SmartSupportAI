@@ -15,13 +15,13 @@ const WelcomePage = () => {
       <div className="grid grid-cols-1 gap-2 w-40">
         <button
           onClick={() => navigate("/login")}
-          className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 mb-2 rounded-lg transition duration-300"
+          className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 mb-2 shadow-md rounded-lg transition duration-300"
         >
           Login
         </button>
         <button
           onClick={() => navigate("/register")}
-          className="bg-green-500 hover:bg-green-400 text-white px-4 py-2 rounded-lg transition duration-300"
+          className="bg-green-500 hover:bg-green-400 text-white px-4 py-2 shadow-md rounded-lg transition duration-300"
         >
           Register
         </button>
