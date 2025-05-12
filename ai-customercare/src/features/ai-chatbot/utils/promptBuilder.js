@@ -22,9 +22,7 @@ export const buildPrompt = (userPrompt, history, faqs) => {
 
   return `
     You are a customer service AI assistant for our website.
-    Here are the 3 most relevant FAQs for this user question:
-
-    Here is our FAQ database for reference:
+    Here are the 5 most relevant FAQs for this user question:
     ${faqsContext}
 
     Important Instructions:

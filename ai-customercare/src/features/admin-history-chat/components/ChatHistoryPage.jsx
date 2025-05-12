@@ -93,11 +93,11 @@ const ChatHistoryPage = () => {
     }
   };
 
-  const handleNextPage = () => {
-    if (currentPage * pageSize < totalItems) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+ const handleNextPage = () => {
+  if ((currentPage - 1) * pageSize + customers.length < totalItems) {
+    setCurrentPage(currentPage + 1);
+  }
+};
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
@@ -115,7 +115,7 @@ const ChatHistoryPage = () => {
   };
 
   const totalPages = Math.ceil(totalItems / pageSize);
-  const hasMore = currentPage * pageSize < totalItems;
+  const hasMore = (currentPage - 1) * pageSize + customers.length < totalItems;
 
   if (error) {
     return <div className="p-4 text-red-500">{error}</div>;
