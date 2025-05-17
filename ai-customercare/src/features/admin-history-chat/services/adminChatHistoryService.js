@@ -1,4 +1,4 @@
-import { db } from "../../../services/firebase";
+import { db, auth } from "../../../services/firebase";
 import {
   collection,
   query,
@@ -11,7 +11,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
-// Helper function to get start and end of day
+// Helper: Awal dan akhir hari
 const getStartAndEndOfDay = (date) => {
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
@@ -25,10 +25,13 @@ const getStartAndEndOfDay = (date) => {
   };
 };
 
-// Get the last message timestamp for each customer
+// ✅ Mendapatkan timestamp pesan terakhir dari customer
 export const getCustomerLastMessageTimestamp = async (customerId) => {
   try {
-    const chatsRef = collection(db, "chats");
+    const user = auth.currentUser;
+    if (!user) throw new Error("User tidak ditemukan");
+
+    const chatsRef = collection(db, "users", user.uid, "chats");
     const q = query(
       chatsRef,
       where("customerId", "==", customerId),
@@ -37,19 +40,16 @@ export const getCustomerLastMessageTimestamp = async (customerId) => {
     );
 
     const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
-      return null;
-    }
+    if (querySnapshot.empty) return null;
 
-    const lastMessage = querySnapshot.docs[0].data();
-    return lastMessage.timestamp;
+    return querySnapshot.docs[0].data().timestamp;
   } catch (error) {
-    console.error(`Error getting last message for ${customerId}:`, error);
+    console.error(`Gagal mengambil pesan terakhir dari ${customerId}:`, error);
     return null;
   }
 };
 
-// Get paginated customers with filtering and sorting
+// ✅ Mendapatkan daftar customer dengan pagination dan filter tanggal
 export const getPaginatedCustomers = async (
   page,
   pageSize,
@@ -57,13 +57,15 @@ export const getPaginatedCustomers = async (
   sortOrder = "newest"
 ) => {
   try {
-    const chatsRef = collection(db, "chats");
+    const user = auth.currentUser;
+    if (!user) throw new Error("User tidak ditemukan");
+
+    const chatsRef = collection(db, "users", user.uid, "chats");
     let q;
 
-    // Build the query based on filters
+    // Filter berdasarkan tanggal
     if (selectedDate) {
       const { start, end } = getStartAndEndOfDay(selectedDate);
-
       q = query(
         chatsRef,
         where("timestamp", ">=", start),
@@ -73,150 +75,119 @@ export const getPaginatedCustomers = async (
       q = query(chatsRef);
     }
 
-    // Get total count
+    // Hitung total dokumen
     const snapshot = await getCountFromServer(q);
     const totalChats = snapshot.data().count;
 
-    // Execute the query
     const querySnapshot = await getDocs(q);
-
-    // Extract unique customer IDs
     const customerMap = new Map();
 
-    // We'll collect customers with their last message timestamp
     for (const doc of querySnapshot.docs) {
       const data = doc.data();
       if (!data.customerId) continue;
 
       const timestamp = data.timestamp;
+      const existing = customerMap.get(data.customerId);
 
-      if (!customerMap.has(data.customerId)) {
-        customerMap.set(data.customerId, { timestamp });
-      } else {
-        // Keep the most recent timestamp for sorting
-        const currentTimestamp = customerMap.get(data.customerId).timestamp;
-
-        if (timestamp && currentTimestamp) {
-          // Compare timestamps and keep the newest
-          if (
-            (sortOrder === "newest" &&
-              timestamp.toMillis() > currentTimestamp.toMillis()) ||
+      if (
+        !existing ||
+        (timestamp &&
+          existing.timestamp &&
+          ((sortOrder === "newest" &&
+            timestamp.toMillis() > existing.timestamp.toMillis()) ||
             (sortOrder === "oldest" &&
-              timestamp.toMillis() < currentTimestamp.toMillis())
-          ) {
-            customerMap.set(data.customerId, { timestamp });
-          }
-        }
+              timestamp.toMillis() < existing.timestamp.toMillis())))
+      ) {
+        customerMap.set(data.customerId, { timestamp });
       }
     }
 
-    // Convert to array for sorting
     let customersArray = Array.from(customerMap, ([customerId, data]) => ({
       customerId,
       lastTimestamp: data.timestamp,
     }));
 
-    // Sort by timestamp
+    // Sort
     customersArray.sort((a, b) => {
-      // Handle cases where timestamp might be missing or null
       if (!a.lastTimestamp) return 1;
       if (!b.lastTimestamp) return -1;
-
-      // Sort based on the desired order
-      if (sortOrder === "newest") {
-        return b.lastTimestamp.toMillis() - a.lastTimestamp.toMillis();
-      } else {
-        return a.lastTimestamp.toMillis() - b.lastTimestamp.toMillis();
-      }
+      return sortOrder === "newest"
+        ? b.lastTimestamp.toMillis() - a.lastTimestamp.toMillis()
+        : a.lastTimestamp.toMillis() - b.lastTimestamp.toMillis();
     });
 
-    // Extract just the customer IDs in the right order
+    // Pagination
     const sortedCustomerIds = customersArray.map((item) => item.customerId);
-
-    // Apply pagination
     const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedCustomers = sortedCustomerIds.slice(startIndex, endIndex);
+    const paginatedCustomers = sortedCustomerIds.slice(
+      startIndex,
+      startIndex + pageSize
+    );
 
     return {
       customers: paginatedCustomers,
       total: sortedCustomerIds.length,
     };
   } catch (error) {
-    console.error("Error in getPaginatedCustomers:", error);
+    console.error("Gagal mendapatkan data customer:", error);
     throw error;
   }
 };
 
-// Get customer chat history
+// ✅ Mendapatkan riwayat chat customer (realtime listener)
 export const getCustomerChat = (customerId, callback) => {
-  if (!customerId) {
-    console.error("Customer ID is required");
+  const user = auth.currentUser;
+  if (!user) {
+    console.error("User tidak ditemukan");
     callback([]);
     return () => {};
   }
 
-  console.log("Setting up listener for customer:", customerId);
-
   try {
-    console.log("Collection path:", "chats");
-
-    const chatsRef = collection(db, "chats");
+    const chatsRef = collection(db, "users", user.uid, "chats");
     const q = query(
       chatsRef,
       where("customerId", "==", customerId),
       orderBy("timestamp", "asc")
     );
 
-    console.log("Query created successfully");
-
     return onSnapshot(
       q,
       (querySnapshot) => {
-        console.log("Snapshot received, document count:", querySnapshot.size);
         const chats = [];
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          console.log("Document data:", doc.id, data);
-
-          let timestamp;
-          try {
-            timestamp = data.timestamp?.toDate() || new Date();
-          } catch (err) {
-            console.warn(
-              "Error converting timestamp, using current date:",
-              err
-            );
-            timestamp = new Date();
-          }
-
+          const timestamp = data.timestamp?.toDate() || new Date();
           chats.push({
             id: doc.id,
             message: data.message || "",
             sender: data.sender || "unknown",
             customerId: data.customerId || customerId,
-            timestamp: timestamp,
+            timestamp,
             formattedTime: timestamp.toLocaleString(),
           });
         });
         callback(chats);
       },
       (error) => {
-        console.error("Error in snapshot listener:", error);
+        console.error("Gagal mengambil chat:", error);
         callback([]);
       }
     );
   } catch (err) {
-    console.error("Error setting up chat listener:", err);
+    console.error("Gagal menyambungkan listener:", err);
     callback([]);
     return () => {};
   }
 };
 
-// Get last message for display in list
+// ✅ Mendapatkan pesan terakhir untuk tampilan daftar
 export const getCustomerLastMessage = async (customerId) => {
   try {
-    const chatsRef = collection(db, "chats");
+    const user = auth.currentUser;
+    if (!user) throw new Error("User tidak ditemukan");
+
+    const chatsRef = collection(db, "users", user.uid, "chats");
     const q = query(
       chatsRef,
       where("customerId", "==", customerId),
@@ -225,21 +196,19 @@ export const getCustomerLastMessage = async (customerId) => {
     );
 
     const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
-      return null;
-    }
+    if (querySnapshot.empty) return null;
 
-    const lastMessageDoc = querySnapshot.docs[0];
-    const data = lastMessageDoc.data();
+    const doc = querySnapshot.docs[0];
+    const data = doc.data();
 
     return {
-      id: lastMessageDoc.id,
+      id: doc.id,
       message: data.message || "",
       sender: data.sender || "unknown",
       timestamp: data.timestamp?.toDate() || new Date(),
     };
   } catch (error) {
-    console.error(`Error getting last message for ${customerId}:`, error);
+    console.error(`Gagal mengambil pesan terakhir dari ${customerId}:`, error);
     return null;
   }
 };

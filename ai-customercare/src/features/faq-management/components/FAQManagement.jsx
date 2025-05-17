@@ -210,12 +210,13 @@ const FAQManagement = () => {
   const totalPages = Math.ceil(totalItems / pageSize);
 
   return (
-    <div className="p-6 max-w-[1440px] bg-gray-50 rounded-lg min-w-[1190px]">
+    <div className="p-6 max-w-[1440px] bg-gray-50 rounded-lg w-full overflow-x-auto">
       <h2 className="text-3xl font-semibold mb-6">FAQ Management</h2>
       <div className="bg-white shadow-md rounded-lg p-6">
-        <div className="flex justify-between mb-4">
+        <div className="flex flex-wrap gap-2 justify-between items-center mb-4">
+          {/* Dropdown Filter */}
           <select
-            className="border p-2 rounded"
+            className="border p-2 rounded-md min-w-[150px]"
             onChange={handleFilterChange}
             value={filterCategory}
           >
@@ -226,9 +227,11 @@ const FAQManagement = () => {
               </option>
             ))}
           </select>
+
+          {/* Tombol Sort */}
           <button
             onClick={toggleSortOrder}
-            className="flex items-center px-3 py-2 border rounded-lg hover:bg-gray-50"
+            className="flex items-center px-3 py-2 border rounded-md hover:bg-gray-100 transition"
             title={sortOrder === "newest" ? "Sort by newest" : "Sort by oldest"}
           >
             {sortOrder === "newest" ? (
@@ -244,109 +247,117 @@ const FAQManagement = () => {
             )}
           </button>
 
+          {/* Tombol Tambah */}
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
             onClick={() => setIsModalOpen(true)}
           >
-            <FaPlus className="mr-2" /> Add New FAQ
+            <FaPlus className="mr-2" />
+            Add New FAQ
           </button>
         </div>
 
-        <div className="relative overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border p-2 w-10">No</th>
-                <th className="border p-2 w-36">Date</th>
-                <th className="border p-2 w-40">Category</th>
-                <th className="border p-2 w-52">Question</th>
-                <th className="border p-2 w-[500px]">Answer</th>
-                <th className="border p-2 w-16">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan="6" className="border p-4 text-center">
-                    Memuat data...
-                  </td>
+        <div className="overflow-x-auto">
+          <div className="p-6 max-w-[1440px] bg-gray-50 rounded-lg w-full mx-auto">
+            <table className="w-max border-collapse">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border p-2 w-10">No</th>
+                  <th className="border p-2 w-36">Date</th>
+                  <th className="border p-2 w-40">Category</th>
+                  <th className="border p-2 w-52">Question</th>
+                  <th className="border p-2 w-[500px]">Answer</th>
+                  <th className="border p-2 w-16">Action</th>
                 </tr>
-              ) : faqs.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="border p-4 text-center">
-                    {debugMessage || "Tidak ada data FAQ"}
-                  </td>
-                </tr>
-              ) : (
-                faqs.map((faq, index) => (
-                  <tr
-                    key={faq.id}
-                    className="text-center odd:bg-white even:bg-gray-100"
-                  >
-                    <td className="border p-2">
-                      {(currentPage - 1) * pageSize + index + 1}
-                    </td>
-                    <td className="border p-2">
-                      {faq.createdAt &&
-                      typeof faq.createdAt.toDate === "function"
-                        ? new Date(faq.createdAt.toDate()).toLocaleDateString()
-                        : new Date(faq.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="border p-2">{faq.category || "-"}</td>
-                    <td className="border p-2">{faq.question}</td>
-                    <td className="border p-2">{faq.answer}</td>
-                    <td className="p-2 flex justify-center space-x-2">
-                      <button
-                        className="text-yellow-500"
-                        onClick={() => handleEdit(faq)}
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        className="text-red-500"
-                        onClick={() => handleDelete(faq.id)}
-                      >
-                        <FaTrash />
-                      </button>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="6" className="border p-4 text-center">
+                      Memuat data...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination controls */}
-        <div className="flex justify-between items-center mt-4">
-          <div className="text-sm text-gray-600">
-            Show {faqs.length ? (currentPage - 1) * pageSize + 1 : 0} -{" "}
-            {Math.min(currentPage * pageSize, totalItems)} items of {totalItems}{" "}
-            FAQ
+                ) : faqs.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="border p-4 text-center">
+                      {debugMessage || "Tidak ada data FAQ"}
+                    </td>
+                  </tr>
+                ) : (
+                  faqs.map((faq, index) => (
+                    <tr
+                      key={faq.id}
+                      className="text-center odd:bg-white even:bg-gray-100"
+                    >
+                      <td className="border p-2">
+                        {(currentPage - 1) * pageSize + index + 1}
+                      </td>
+                      <td className="border p-2">
+                        {faq.createdAt &&
+                        typeof faq.createdAt.toDate === "function"
+                          ? new Date(
+                              faq.createdAt.toDate()
+                            ).toLocaleDateString()
+                          : new Date(faq.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="border p-2">{faq.category || "-"}</td>
+                      <td className="border p-2">{faq.question}</td>
+                      <td className="border p-2">{faq.answer}</td>
+                      <td className="p-2 flex justify-center space-x-2">
+                        <button
+                          className="text-yellow-500"
+                          onClick={() => handleEdit(faq)}
+                        >
+                          <FaEdit />
+                        </button>
+                        <button
+                          className="text-red-500"
+                          onClick={() => handleDelete(faq.id)}
+                        >
+                          <FaTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-          <div className="flex space-x-2">
-            <button
-              className={`px-3 py-1 rounded ${
-                currentPage > 1
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-500"
-              }`}
-              onClick={handlePrevPage}
-              disabled={currentPage <= 1}
-            >
-              <FaChevronLeft />
-            </button>
-            <span className="px-3 py-1">
-              Page {currentPage} of {totalPages || 1}
-            </span>
-            <button
-              className={`px-3 py-1 rounded ${
-                hasMore ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-500"
-              }`}
-              onClick={handleNextPage}
-              disabled={!hasMore}
-            >
-              <FaChevronRight />
-            </button>
+
+          {/* Pagination controls */}
+          <div className="flex justify-between items-center mt-4">
+            <div className="text-sm text-gray-600">
+              Show {faqs.length ? (currentPage - 1) * pageSize + 1 : 0} -{" "}
+              {Math.min(currentPage * pageSize, totalItems)} items of{" "}
+              {totalItems} FAQ
+            </div>
+            <div className="flex space-x-2">
+              <button
+                className={`px-3 py-1 rounded ${
+                  currentPage > 1
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-500"
+                }`}
+                onClick={handlePrevPage}
+                disabled={currentPage <= 1}
+              >
+                <FaChevronLeft />
+              </button>
+              <span className="px-3 py-1">
+                Page {currentPage} of {totalPages || 1}
+              </span>
+              <button
+                className={`px-3 py-1 rounded ${
+                  hasMore
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-500"
+                }`}
+                onClick={handleNextPage}
+                disabled={!hasMore}
+              >
+                <FaChevronRight />
+              </button>
+            </div>
           </div>
         </div>
       </div>

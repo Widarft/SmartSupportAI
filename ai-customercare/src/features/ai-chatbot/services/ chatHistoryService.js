@@ -1,4 +1,4 @@
-import { db } from "../../../services/firebase";
+import { db, auth } from "../../../services/firebase";
 import {
   collection,
   addDoc,
@@ -11,12 +11,17 @@ import {
 
 export const saveChat = async (customerId, message, sender) => {
   try {
-    await addDoc(collection(db, "chats"), {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User tidak ditemukan. Harap login.");
+
+    await addDoc(collection(db, "users", user.uid, "chats"), {
       customerId,
       message,
       sender,
       timestamp: serverTimestamp(),
     });
+
+    return { success: true, message: "Chat berhasil disimpan!" };
   } catch (error) {
     console.error("Error saving chat:", error);
     throw error;
@@ -24,8 +29,14 @@ export const saveChat = async (customerId, message, sender) => {
 };
 
 export const getCustomerChatHistory = (customerId, callback) => {
+  const user = auth.currentUser;
+  if (!user) {
+    console.error("User tidak ditemukan. Harap login.");
+    return () => {};
+  }
+
   const q = query(
-    collection(db, "chats"),
+    collection(db, "users", user.uid, "chats"),
     where("customerId", "==", customerId),
     orderBy("timestamp", "asc")
   );
@@ -48,9 +59,15 @@ export const getCustomerChatHistory = (customerId, callback) => {
 };
 
 export const getAllCustomers = (callback) => {
-  const q = query(collection(db, "chats"));
+  const user = auth.currentUser;
+  if (!user) {
+    console.error("User tidak ditemukan. Harap login.");
+    return () => {};
+  }
 
-  return onSnapshot(q, (querySnapshot) => {
+  const chatsRef = collection(db, "users", user.uid, "chats");
+
+  return onSnapshot(chatsRef, (querySnapshot) => {
     const customerIds = new Set();
     querySnapshot.forEach((doc) => {
       customerIds.add(doc.data().customerId);

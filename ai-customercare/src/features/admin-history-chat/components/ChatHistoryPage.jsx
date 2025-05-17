@@ -5,6 +5,8 @@ import {
   FaChevronRight,
   FaSortAmountDown,
   FaSortAmountUpAlt,
+  FaFilter,
+  FaTimes,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import {
@@ -16,24 +18,41 @@ const ChatHistoryPage = () => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [error, setError] = useState(null);
+  const [showFilters, setShowFilters] = useState(false);
   const navigate = useNavigate();
 
-  // Filter states
   const [selectedDate, setSelectedDate] = useState(null);
-  const [sortOrder, setSortOrder] = useState("newest"); // "newest" or "oldest"
+  const [sortOrder, setSortOrder] = useState("newest");
   const [customerDetails, setCustomerDetails] = useState([]);
+
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+
+      if (window.innerWidth < 640) {
+        setPageSize(5);
+      } else {
+        setPageSize(10);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const loadCustomers = async () => {
       setLoading(true);
       try {
-        console.log("Loading customers for page:", currentPage);
-        console.log("Filter date:", selectedDate);
-        console.log("Sort order:", sortOrder);
-
         const { customers, total } = await getPaginatedCustomers(
           currentPage,
           pageSize,
@@ -41,11 +60,9 @@ const ChatHistoryPage = () => {
           sortOrder
         );
 
-        console.log("Loaded customers:", customers);
         setCustomers(customers);
         setTotalItems(total);
 
-        // Get last message for each customer for display
         const details = await Promise.all(
           customers.map(async (customerId) => {
             if (!customerId) return { customerId: null, lastMessage: null };
@@ -83,7 +100,6 @@ const ChatHistoryPage = () => {
       return;
     }
 
-    console.log("Navigating to customer details:", customerId);
     navigate(`/adminhistorychat/${customerId}`);
   };
 
@@ -93,15 +109,15 @@ const ChatHistoryPage = () => {
     }
   };
 
- const handleNextPage = () => {
-  if ((currentPage - 1) * pageSize + customers.length < totalItems) {
-    setCurrentPage(currentPage + 1);
-  }
-};
+  const handleNextPage = () => {
+    if ((currentPage - 1) * pageSize + customers.length < totalItems) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
   };
 
   const handleClearDate = () => {
@@ -111,7 +127,11 @@ const ChatHistoryPage = () => {
 
   const toggleSortOrder = () => {
     setSortOrder(sortOrder === "newest" ? "oldest" : "newest");
-    setCurrentPage(1); // Reset to first page when filter changes
+    setCurrentPage(1);
+  };
+
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
   };
 
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -123,6 +143,16 @@ const ChatHistoryPage = () => {
 
   const formatDateTime = (date) => {
     if (!date) return "";
+
+    if (windowWidth < 640) {
+      return date.toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+
     return date.toLocaleString("id-ID", {
       day: "2-digit",
       month: "2-digit",
@@ -132,42 +162,59 @@ const ChatHistoryPage = () => {
     });
   };
 
-  return (
-    <div className="flex min-h-screen min-w-[1190px]">
-      {/* Main Content */}
-      <div className="flex-1 p-6 bg-gray-100">
-        <h1 className="text-3xl font-semibold mb-6">Chat History</h1>
-        <div className="bg-white rounded-lg shadow overflow-hidden min-w-[1100px]">
-          <div className="p-4 border-b flex justify-between items-center">
-            <h3 className="text-lg font-medium">Customer List</h3>
+  const truncateText = (text, maxLength) => {
+    if (!text) return "";
 
-            {/* Filter Controls */}
-            <div className="flex items-center space-x-4">
+    const limit = windowWidth < 640 ? maxLength / 2 : maxLength;
+
+    return text.length > limit ? `${text.substring(0, limit)}...` : text;
+  };
+
+  return (
+    <div className="flex min-h-screen w-full">
+      {/* Main Content */}
+      <div className="flex-1 p-2 sm:p-6 bg-gray-100">
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-6">
+          Chat History
+        </h1>
+        <div className="bg-white rounded-lg shadow overflow-hidden w-full">
+          <div className="p-3 sm:p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <h3 className="text-base sm:text-lg font-medium">Customer List</h3>
+
+            {/* Mobile Filter Toggle Button */}
+            <div className="sm:hidden flex justify-end w-full">
+              <button
+                onClick={toggleFilters}
+                className="px-3 py-2 bg-blue-500 text-white rounded-lg flex items-center"
+              >
+                <FaFilter className="mr-2" />
+                <span className="text-sm">Filter</span>
+              </button>
+            </div>
+
+            {/* Filter Controls - Desktop */}
+            <div className="hidden sm:flex items-center space-x-4">
               <div className="relative flex items-center">
-                <div className="relative flex items-center">
-                  <input
-                    type="date"
-                    value={
-                      selectedDate
-                        ? selectedDate.toISOString().split("T")[0]
-                        : ""
-                    }
-                    onChange={(e) =>
-                      handleDateChange(
-                        e.target.value ? new Date(e.target.value) : null
-                      )
-                    }
-                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {selectedDate && (
-                    <button
-                      onClick={handleClearDate}
-                      className="ml-2 text-gray-500 hover:text-gray-700"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
+                <input
+                  type="date"
+                  value={
+                    selectedDate ? selectedDate.toISOString().split("T")[0] : ""
+                  }
+                  onChange={(e) =>
+                    handleDateChange(
+                      e.target.value ? new Date(e.target.value) : null
+                    )
+                  }
+                  className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {selectedDate && (
+                  <button
+                    onClick={handleClearDate}
+                    className="ml-2 text-red-500 hover:text-red-700"
+                  >
+                    <FaTimes />
+                  </button>
+                )}
               </div>
 
               <button
@@ -190,6 +237,56 @@ const ChatHistoryPage = () => {
                 )}
               </button>
             </div>
+
+            {/* Filter Controls - Mobile */}
+            {showFilters && (
+              <div className="sm:hidden w-full space-y-3 pb-2">
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm text-gray-600">Tanggal</label>
+                  <div className="flex items-center">
+                    <input
+                      type="date"
+                      value={
+                        selectedDate
+                          ? selectedDate.toISOString().split("T")[0]
+                          : ""
+                      }
+                      onChange={(e) =>
+                        handleDateChange(
+                          e.target.value ? new Date(e.target.value) : null
+                        )
+                      }
+                      className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                    />
+                    {selectedDate && (
+                      <button
+                        onClick={handleClearDate}
+                        className="ml-2 text-gray-500 hover:text-gray-700"
+                      >
+                        <FaTimes />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={toggleSortOrder}
+                  className="flex items-center px-3 py-2 border rounded-lg hover:bg-gray-50 w-full justify-center"
+                >
+                  {sortOrder === "newest" ? (
+                    <>
+                      <FaSortAmountDown className="mr-2" />
+                      <span>Newest</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaSortAmountUpAlt className="mr-2" />
+                      <span>Oldest</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -208,30 +305,28 @@ const ChatHistoryPage = () => {
                       <div
                         key={customerId || index}
                         onClick={() => handleCustomerClick(customerId)}
-                        className="p-4 hover:bg-gray-50 cursor-pointer"
+                        className="p-3 sm:p-4 hover:bg-gray-50 cursor-pointer"
                       >
-                        <div className="flex items-center">
-                          <FaUser className="mr-3 text-blue-500" />
-                          <div className="flex-1">
-                            <div className="font-medium">
-                              Customer: {customerId || "Unknown"}
+                        <div className="flex items-start sm:items-center">
+                          <FaUser className="mt-1 sm:mt-0 mr-2 sm:mr-3 text-blue-500 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm sm:text-base">
+                              {truncateText(customerId || "Unknown", 20)}
                             </div>
                             {lastMessage && (
-                              <div className="text-sm text-gray-500 mt-1">
+                              <div className="text-xs sm:text-sm text-gray-500 mt-1 line-clamp-2">
                                 <span className="font-medium">
                                   {lastMessage.sender === "user"
                                     ? "User"
                                     : "Bot"}
                                   :
                                 </span>{" "}
-                                {lastMessage.message?.length > 50
-                                  ? `${lastMessage.message.substring(0, 50)}...`
-                                  : lastMessage.message}
+                                {truncateText(lastMessage.message, 50)}
                               </div>
                             )}
                           </div>
                           {lastMessage && (
-                            <div className="text-xs text-gray-400">
+                            <div className="text-xs text-gray-400 shrink-0 ml-2">
                               {formatDateTime(lastMessage.timestamp)}
                             </div>
                           )}
@@ -247,15 +342,15 @@ const ChatHistoryPage = () => {
               </div>
 
               {/* Pagination controls */}
-              <div className="flex justify-between items-center p-4 border-t">
-                <div className="text-sm text-gray-600">
+              <div className="flex flex-col sm:flex-row justify-between items-center p-3 sm:p-4 border-t gap-3">
+                <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                   Show {customers.length ? (currentPage - 1) * pageSize + 1 : 0}{" "}
                   - {Math.min(currentPage * pageSize, totalItems)} of{" "}
                   {totalItems} customers
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 items-center">
                   <button
-                    className={`px-3 py-1 rounded ${
+                    className={`px-2 sm:px-3 py-1 rounded ${
                       currentPage > 1
                         ? "bg-blue-500 text-white"
                         : "bg-gray-200 text-gray-500"
@@ -265,11 +360,11 @@ const ChatHistoryPage = () => {
                   >
                     <FaChevronLeft />
                   </button>
-                  <span className="px-3 py-1">
-                    Page {currentPage} of {totalPages || 1}
+                  <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm">
+                    {currentPage} / {totalPages || 1}
                   </span>
                   <button
-                    className={`px-3 py-1 rounded ${
+                    className={`px-2 sm:px-3 py-1 rounded ${
                       hasMore
                         ? "bg-blue-500 text-white"
                         : "bg-gray-200 text-gray-500"

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import FAQManagement from "./FAQManagement";
 import Sidebar from "../../../components/ui/Sidebar";
 

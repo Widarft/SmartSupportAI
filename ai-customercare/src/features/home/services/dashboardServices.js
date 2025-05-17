@@ -1,7 +1,6 @@
 import { db, auth } from "../../../services/firebase";
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 
-// Hitung jumlah FAQ
 export const getFAQsCount = async () => {
   const user = auth.currentUser;
   if (!user) return 0;
@@ -9,7 +8,6 @@ export const getFAQsCount = async () => {
   return snapshot.size;
 };
 
-// Hitung jumlah kategori
 export const getCategoriesCount = async () => {
   const user = auth.currentUser;
   if (!user) return 0;
@@ -19,9 +17,11 @@ export const getCategoriesCount = async () => {
   return snapshot.size;
 };
 
-// Hitung jumlah pelanggan yang pernah mengirim pesan
 export const getUniqueCustomerCount = async () => {
-  const snapshot = await getDocs(collection(db, "chats"));
+  const user = auth.currentUser;
+  if (!user) return 0;
+
+  const snapshot = await getDocs(collection(db, "users", user.uid, "chats"));
   const uniqueCustomerIds = new Set();
   snapshot.forEach((doc) => {
     const data = doc.data();
@@ -30,9 +30,15 @@ export const getUniqueCustomerCount = async () => {
   return uniqueCustomerIds.size;
 };
 
-// Ambil 10 pesan terbaru
 export const getRecentMessages = async () => {
-  const q = query(collection(db, "chats"), orderBy("timestamp", "desc"));
+  const user = auth.currentUser;
+  if (!user) return [];
+
+  const q = query(
+    collection(db, "users", user.uid, "chats"),
+    orderBy("timestamp", "desc")
+  );
+
   const snapshot = await getDocs(q);
 
   const uniqueMessages = [];
