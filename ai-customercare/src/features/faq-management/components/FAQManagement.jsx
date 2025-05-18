@@ -34,6 +34,7 @@ const FAQManagement = () => {
   const [firstVisible, setFirstVisible] = useState(null);
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const [debugMessage, setDebugMessage] = useState("");
 
@@ -215,48 +216,52 @@ const FAQManagement = () => {
         FAQ Management
       </h1>
       <div className="bg-white shadow-md rounded-lg p-6">
-        <div className="flex flex-wrap gap-2 justify-between items-center mb-4">
-          {/* Dropdown Filter */}
-          <select
-            className="border p-2 rounded-md min-w-[150px]"
-            onChange={handleFilterChange}
-            value={filterCategory}
-          >
-            <option value="">All Category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.name}>
-                {category.name}
-              </option>
-            ))}
-          </select>
+        <div>
+          <div className="flex flex-col md:flex-row gap-2 justify-between items-stretch md:items-center mb-4">
+            {/* Dropdown Filter */}
+            <select
+              className="border p-2 rounded-md w-full md:w-auto"
+              onChange={handleFilterChange}
+              value={filterCategory}
+            >
+              <option value="">All Category</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
 
-          {/* Tombol Sort */}
-          <button
-            onClick={toggleSortOrder}
-            className="flex items-center px-3 py-2 border rounded-md hover:bg-gray-100 transition"
-            title={sortOrder === "newest" ? "Sort by newest" : "Sort by oldest"}
-          >
-            {sortOrder === "newest" ? (
-              <>
-                <FaSortAmountDown className="mr-2" />
-                <span>Newest</span>
-              </>
-            ) : (
-              <>
-                <FaSortAmountUpAlt className="mr-2" />
-                <span>Oldest</span>
-              </>
-            )}
-          </button>
+            {/* Tombol Sort */}
+            <button
+              onClick={toggleSortOrder}
+              className="flex items-center px-3 py-2 border rounded-md hover:bg-gray-100 transition w-full md:w-auto"
+              title={
+                sortOrder === "newest" ? "Sort by newest" : "Sort by oldest"
+              }
+            >
+              {sortOrder === "newest" ? (
+                <>
+                  <FaSortAmountDown className="mr-2" />
+                  <span>Newest</span>
+                </>
+              ) : (
+                <>
+                  <FaSortAmountUpAlt className="mr-2" />
+                  <span>Oldest</span>
+                </>
+              )}
+            </button>
 
-          {/* Tombol Tambah */}
-          <button
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-            onClick={() => setIsModalOpen(true)}
-          >
-            <FaPlus className="mr-2" />
-            Add New FAQ
-          </button>
+            {/* Tombol Tambah */}
+            <button
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition w-full md:w-auto"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <FaPlus className="mr-2" />
+              Add New FAQ
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

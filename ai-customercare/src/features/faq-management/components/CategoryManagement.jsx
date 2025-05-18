@@ -102,13 +102,14 @@ const CategoryManagement = () => {
         </h1>
         <div className="flex justify-center">
           <div className="bg-white shadow-md rounded-lg p-6">
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded flex items-center mb-4"
-              onClick={() => handleOpenModal()}
-            >
-              <FaPlus className="mr-2" /> Add Category
-            </button>
-
+            <div className="flex justify-end">
+              <button
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center mb-4"
+                onClick={() => handleOpenModal()}
+              >
+                <FaPlus className="mr-2" /> Add Category
+              </button>
+            </div>
             <div className="relative overflow-x-auto">
               <table className="w-full border-collapse border border-gray-300">
                 <thead>
