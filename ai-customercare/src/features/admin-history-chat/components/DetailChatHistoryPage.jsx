@@ -10,7 +10,10 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import ReactMarkdown from "react-markdown";
-import { getCustomerChat } from "../services/adminChatHistoryService";
+import {
+  getCustomerChat,
+  markMessagesAsRead,
+} from "../services/adminChatHistoryService";
 import { generateChatSummary } from "../services/summaryService";
 
 const DetailChatHistoryPage = () => {
@@ -57,26 +60,28 @@ const DetailChatHistoryPage = () => {
       return;
     }
 
-    console.log("Loading chat data for customer ID:", customerId);
+    const markAsRead = async () => {
+      try {
+        await markMessagesAsRead(customerId);
+        console.log("Semua pesan ditandai sebagai dibaca");
+      } catch (error) {
+        console.error("Gagal menandai pesan sebagai dibaca:", error);
+      }
+    };
 
-    try {
-      const unsubscribe = getCustomerChat(customerId, (chatData) => {
-        console.log("Received chat data:", chatData.length, "messages");
-        setChats(chatData);
-        setLoading(false);
-      });
+    markAsRead();
 
-      return () => {
-        console.log("Unsubscribing from chat listener");
-        if (typeof unsubscribe === "function") {
-          unsubscribe();
-        }
-      };
-    } catch (err) {
-      console.error("Error setting up chat listener:", err);
-      setError(`Gagal memuat data chat: ${err.message}`);
+    const unsubscribe = getCustomerChat(customerId, (chatData) => {
+      console.log("Received chat data:", chatData.length, "messages");
+      setChats(chatData);
       setLoading(false);
-    }
+    });
+
+    return () => {
+      if (typeof unsubscribe === "function") {
+        unsubscribe();
+      }
+    };
   }, [customerId]);
 
   if (error) {

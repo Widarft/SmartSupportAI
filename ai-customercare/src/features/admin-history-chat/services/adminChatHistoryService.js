@@ -233,7 +233,6 @@ export const markMessagesAsRead = async (customerId) => {
     const user = auth.currentUser;
     if (!user) throw new Error("User tidak ditemukan");
 
-    // 1. Dapatkan semua pesan belum dibaca
     const chatsRef = collection(db, "users", user.uid, "chats");
     const q = query(
       chatsRef,
@@ -244,7 +243,6 @@ export const markMessagesAsRead = async (customerId) => {
 
     const querySnapshot = await getDocs(q);
 
-    // 2. Update semua pesan yang belum dibaca
     const updatePromises = querySnapshot.docs.map((doc) =>
       updateDoc(doc.ref, { read: true })
     );
