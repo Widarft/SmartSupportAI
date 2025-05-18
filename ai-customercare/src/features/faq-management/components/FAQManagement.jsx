@@ -211,7 +211,9 @@ const FAQManagement = () => {
 
   return (
     <div className="p-6 max-w-[1440px] bg-gray-50 rounded-lg w-full overflow-x-auto">
-      <h2 className="text-3xl font-semibold mb-6">FAQ Management</h2>
+      <h1 className="text-2xl md:text-3xl text-center md:text-left font-semibold mb-4 md:mb-6">
+        FAQ Management
+      </h1>
       <div className="bg-white shadow-md rounded-lg p-6">
         <div className="flex flex-wrap gap-2 justify-between items-center mb-4">
           {/* Dropdown Filter */}

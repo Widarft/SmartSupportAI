@@ -174,7 +174,7 @@ const ChatHistoryPage = () => {
     <div className="flex min-h-screen w-full">
       {/* Main Content */}
       <div className="flex-1 p-2 sm:p-6 bg-gray-100">
-        <h1 className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-6">
+        <h1 className="text-2xl md:text-3xl text-center md:text-left font-semibold mb-4 md:mb-6">
           Chat History
         </h1>
         <div className="bg-white rounded-lg shadow overflow-hidden w-full">

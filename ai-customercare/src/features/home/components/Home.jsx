@@ -48,7 +48,7 @@ const Home = () => {
     <div className="flex flex-col md:flex-row min-h-screen">
       <Sidebar />
       <div className="flex-1 p-4 sm:p-6 bg-gray-100">
-        <h1 className="text-3xl sm:text-3xl font-semibold mb-4 sm:mb-6">
+        <h1 className="text-2xl md:text-3xl text-center md:text-left font-semibold mb-4 md:mb-6">
           Dashboard
         </h1>
 

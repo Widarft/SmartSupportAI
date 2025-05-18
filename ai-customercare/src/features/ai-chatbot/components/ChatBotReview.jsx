@@ -3,8 +3,10 @@ import ChatBot from "./ChatBot";
 
 const ChatBotReview = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-semibold">Chatbot Review</h1>
+    <div className="w-full p-6">
+      <h1 className="text-2xl md:text-3xl text-center md:text-left font-semibold mb-4 md:mb-6">
+        Chatbot Review
+      </h1>
       <ChatBot />
     </div>
   );

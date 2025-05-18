@@ -97,7 +97,9 @@ const CategoryManagement = () => {
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
       <div className="p-6">
-        <h2 className="text-3xl font-semibold mb-6">Category Management</h2>
+        <h1 className="text-2xl md:text-3xl text-center md:text-left font-semibold mb-4 md:mb-6">
+          Category Management
+        </h1>
         <div className="flex justify-center">
           <div className="bg-white shadow-md rounded-lg p-6">
             <button

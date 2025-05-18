@@ -183,7 +183,7 @@ const DetailChatHistoryPage = () => {
       {/* Main Content - responsif */}
       <div className="flex-1 md:ml-64">
         <div className="p-4 md:p-6 bg-gray-100 min-h-screen">
-          <h1 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6">
+          <h1 className="text-2xl md:text-3xl text-center md:text-left font-semibold mb-4 md:mb-6">
             Chat History
           </h1>
 
