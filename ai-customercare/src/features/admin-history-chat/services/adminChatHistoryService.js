@@ -9,9 +9,10 @@ import {
   getCountFromServer,
   limit,
   Timestamp,
+  updateDoc,
+  doc,
 } from "firebase/firestore";
 
-// Helper: Awal dan akhir hari
 const getStartAndEndOfDay = (date) => {
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
@@ -25,7 +26,6 @@ const getStartAndEndOfDay = (date) => {
   };
 };
 
-// ✅ Mendapatkan timestamp pesan terakhir dari customer
 export const getCustomerLastMessageTimestamp = async (customerId) => {
   try {
     const user = auth.currentUser;
@@ -49,7 +49,6 @@ export const getCustomerLastMessageTimestamp = async (customerId) => {
   }
 };
 
-// ✅ Mendapatkan daftar customer dengan pagination dan filter tanggal
 export const getPaginatedCustomers = async (
   page,
   pageSize,
@@ -63,7 +62,6 @@ export const getPaginatedCustomers = async (
     const chatsRef = collection(db, "users", user.uid, "chats");
     let q;
 
-    // Filter berdasarkan tanggal
     if (selectedDate) {
       const { start, end } = getStartAndEndOfDay(selectedDate);
       q = query(
@@ -75,7 +73,6 @@ export const getPaginatedCustomers = async (
       q = query(chatsRef);
     }
 
-    // Hitung total dokumen
     const snapshot = await getCountFromServer(q);
     const totalChats = snapshot.data().count;
 
@@ -107,7 +104,6 @@ export const getPaginatedCustomers = async (
       lastTimestamp: data.timestamp,
     }));
 
-    // Sort
     customersArray.sort((a, b) => {
       if (!a.lastTimestamp) return 1;
       if (!b.lastTimestamp) return -1;
@@ -116,7 +112,6 @@ export const getPaginatedCustomers = async (
         : a.lastTimestamp.toMillis() - b.lastTimestamp.toMillis();
     });
 
-    // Pagination
     const sortedCustomerIds = customersArray.map((item) => item.customerId);
     const startIndex = (page - 1) * pageSize;
     const paginatedCustomers = sortedCustomerIds.slice(
@@ -134,7 +129,6 @@ export const getPaginatedCustomers = async (
   }
 };
 
-// ✅ Mendapatkan riwayat chat customer (realtime listener)
 export const getCustomerChat = (customerId, callback) => {
   const user = auth.currentUser;
   if (!user) {
@@ -165,6 +159,7 @@ export const getCustomerChat = (customerId, callback) => {
             customerId: data.customerId || customerId,
             timestamp,
             formattedTime: timestamp.toLocaleString(),
+            read: data.read || false,
           });
         });
         callback(chats);
@@ -181,7 +176,6 @@ export const getCustomerChat = (customerId, callback) => {
   }
 };
 
-// ✅ Mendapatkan pesan terakhir untuk tampilan daftar
 export const getCustomerLastMessage = async (customerId) => {
   try {
     const user = auth.currentUser;
@@ -206,9 +200,59 @@ export const getCustomerLastMessage = async (customerId) => {
       message: data.message || "",
       sender: data.sender || "unknown",
       timestamp: data.timestamp?.toDate() || new Date(),
+      read: data.read || false,
     };
   } catch (error) {
-    console.error(`Gagal mengambil pesan terakhir dari ${customerId}:`, error);
+    console.error(`Error getting last message for ${customerId}:`, error);
     return null;
+  }
+};
+
+export const getUnreadMessagesCount = async (customerId) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User tidak ditemukan");
+
+    const chatsRef = collection(db, "users", user.uid, "chats");
+    const q = query(
+      chatsRef,
+      where("customerId", "==", customerId),
+      where("sender", "==", "user"),
+      where("read", "==", false)
+    );
+
+    const snapshot = await getCountFromServer(q);
+    return snapshot.data().count;
+  } catch (error) {
+    console.error("Error getting unread count:", error);
+    return 0;
+  }
+};
+export const markMessagesAsRead = async (customerId) => {
+  try {
+    const user = auth.currentUser;
+    if (!user) throw new Error("User tidak ditemukan");
+
+    // 1. Dapatkan semua pesan belum dibaca
+    const chatsRef = collection(db, "users", user.uid, "chats");
+    const q = query(
+      chatsRef,
+      where("customerId", "==", customerId),
+      where("sender", "==", "user"),
+      where("read", "==", false)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    // 2. Update semua pesan yang belum dibaca
+    const updatePromises = querySnapshot.docs.map((doc) =>
+      updateDoc(doc.ref, { read: true })
+    );
+
+    await Promise.all(updatePromises);
+    return true;
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+    throw error;
   }
 };

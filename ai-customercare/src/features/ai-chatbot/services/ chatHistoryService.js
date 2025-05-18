@@ -19,6 +19,7 @@ export const saveChat = async (customerId, message, sender) => {
       message,
       sender,
       timestamp: serverTimestamp(),
+      read: false,
     });
 
     return { success: true, message: "Chat berhasil disimpan!" };

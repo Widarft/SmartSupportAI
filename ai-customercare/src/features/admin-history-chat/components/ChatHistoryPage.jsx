@@ -12,6 +12,8 @@ import { useNavigate } from "react-router-dom";
 import {
   getPaginatedCustomers,
   getCustomerLastMessage,
+  getUnreadMessagesCount,
+  markMessagesAsRead,
 } from "../services/adminChatHistoryService";
 
 const ChatHistoryPage = () => {
@@ -29,6 +31,8 @@ const ChatHistoryPage = () => {
   const [customerDetails, setCustomerDetails] = useState([]);
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  const [unreadCounts, setUnreadCounts] = useState({});
 
   useEffect(() => {
     const handleResize = () => {
@@ -67,20 +71,30 @@ const ChatHistoryPage = () => {
           customers.map(async (customerId) => {
             if (!customerId) return { customerId: null, lastMessage: null };
             try {
-              const lastMessage = await getCustomerLastMessage(customerId);
+              const [lastMessage, unreadCount] = await Promise.all([
+                getCustomerLastMessage(customerId),
+                getUnreadMessagesCount(customerId),
+              ]);
+
               return {
                 customerId,
                 lastMessage,
+                unreadCount,
               };
             } catch (error) {
-              console.error(
-                `Error getting last message for ${customerId}:`,
-                error
-              );
-              return { customerId, lastMessage: null };
+              console.error(`Error getting details for ${customerId}:`, error);
+              return { customerId, lastMessage: null, unreadCount: 0 };
             }
           })
         );
+
+        const counts = {};
+        details.forEach((detail) => {
+          if (detail.customerId) {
+            counts[detail.customerId] = detail.unreadCount;
+          }
+        });
+        setUnreadCounts(counts);
 
         setCustomerDetails(details);
       } catch (error) {
@@ -94,13 +108,37 @@ const ChatHistoryPage = () => {
     loadCustomers();
   }, [currentPage, pageSize, selectedDate, sortOrder]);
 
-  const handleCustomerClick = (customerId) => {
+  const renderUnreadBadge = (customerId) => {
+    const count = unreadCounts[customerId] || 0;
+    if (count <= 0) return null;
+
+    return (
+      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+        {count}
+      </span>
+    );
+  };
+
+  const handleCustomerClick = async (customerId) => {
     if (!customerId) {
       console.error("Customer ID tidak valid:", customerId);
       return;
     }
 
-    navigate(`/adminhistorychat/${customerId}`);
+    try {
+      if (unreadCounts[customerId] > 0) {
+        await markMessagesAsRead(customerId);
+
+        setUnreadCounts((prev) => ({
+          ...prev,
+          [customerId]: 0,
+        }));
+      }
+
+      navigate(`/adminhistorychat/${customerId}`);
+    } catch (error) {
+      console.error("Gagal menandai pesan sebagai dibaca:", error);
+    }
   };
 
   const handlePrevPage = () => {
@@ -305,10 +343,13 @@ const ChatHistoryPage = () => {
                       <div
                         key={customerId || index}
                         onClick={() => handleCustomerClick(customerId)}
-                        className="p-3 sm:p-4 hover:bg-gray-50 cursor-pointer"
+                        className="p-3 sm:p-4 hover:bg-gray-50 cursor-pointer relative"
                       >
                         <div className="flex items-start sm:items-center">
-                          <FaUser className="mt-1 sm:mt-0 mr-2 sm:mr-3 text-blue-500 shrink-0" />
+                          <div className="relative mr-2 sm:mr-3">
+                            <FaUser className="mt-1 sm:mt-0 text-blue-500 shrink-0" />
+                            {renderUnreadBadge(customerId)}
+                          </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-sm sm:text-base">
                               {truncateText(customerId || "Unknown", 20)}
@@ -322,6 +363,10 @@ const ChatHistoryPage = () => {
                                   :
                                 </span>{" "}
                                 {truncateText(lastMessage.message, 50)}
+                                {!lastMessage.read &&
+                                  lastMessage.sender === "user" && (
+                                    <span className="ml-2 inline-block h-2 w-2 rounded-full bg-red-500"></span>
+                                  )}
                               </div>
                             )}
                           </div>

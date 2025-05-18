@@ -4,7 +4,10 @@ import { useCustomerServiceAI } from "../services/useCustomerServiceAI";
 import { BsChatDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import { Tooltip } from "react-tooltip";
-import { getCustomerChatHistory } from "../services/ chatHistoryService";
+import {
+  getCustomerChatHistory,
+  saveChat,
+} from "../services/ chatHistoryService";
 import { generateCustomerId } from "../utils/customerUtils";
 
 import HomePageChat from "./HomePageChat";
@@ -20,6 +23,7 @@ const ChatBot = () => {
   const [dimensions, setDimensions] = useState({ width: 384, height: 600 });
   const chatBotRef = useRef(null);
   const { handleSend, isLoading } = useCustomerServiceAI();
+  const [hasWelcomed, setHasWelcomed] = useState(false);
 
   const calculateDimensions = () => {
     const maxWidth = 384;
@@ -83,11 +87,45 @@ const ChatBot = () => {
           time: msg.timestamp ? msg.timestamp.toLocaleTimeString() : "",
         }));
         setMessages(formattedMessages);
+
+        if (firebaseMessages.length > 0) {
+          setHasWelcomed(true);
+        }
       }
     );
 
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    const sendWelcomeMessage = async () => {
+      if (
+        isOpen &&
+        activePage === "chat" &&
+        messages.length === 0 &&
+        !hasWelcomed
+      ) {
+        const customerId =
+          localStorage.getItem("customerId") || generateCustomerId();
+        const welcomeMessage = {
+          user: "AI Assistant",
+          message: "Halo! Saya asisten virtual Anda. Ada yang bisa saya bantu?",
+          sender: "ai",
+          timestamp: new Date(),
+          time: new Date().toLocaleTimeString(),
+        };
+
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        await saveChat(customerId, welcomeMessage.message, "ai");
+
+        setMessages([welcomeMessage]);
+        setHasWelcomed(true);
+      }
+    };
+
+    sendWelcomeMessage();
+  }, [isOpen, activePage, messages.length, hasWelcomed]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,6 +138,7 @@ const ChatBot = () => {
 
   const clearHistory = () => {
     setMessages([]);
+    setHasWelcomed(false);
     localStorage.removeItem("chatHistory");
   };
 
