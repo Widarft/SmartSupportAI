@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCustomerServiceAI } from "../services/useCustomerServiceAI";
 import { BsChatDots } from "react-icons/bs";
@@ -17,7 +17,52 @@ const ChatBot = () => {
   const [activePage, setActivePage] = useState("home");
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
+  const [dimensions, setDimensions] = useState({ width: 384, height: 600 });
+  const chatBotRef = useRef(null);
   const { handleSend, isLoading } = useCustomerServiceAI();
+
+  const calculateDimensions = () => {
+    const maxWidth = 384;
+    const maxHeight = 600;
+    const aspectRatio = maxHeight / maxWidth;
+
+    const availableWidth = window.innerWidth * 0.9;
+
+    const availableHeight = window.innerHeight * 0.8;
+
+    const heightLimited = availableHeight < maxHeight;
+
+    let newWidth, newHeight;
+
+    if (heightLimited) {
+      newHeight = availableHeight;
+      newWidth = newHeight / aspectRatio;
+
+      newWidth = Math.min(newWidth, availableWidth);
+    } else {
+      newWidth = Math.min(availableWidth, maxWidth);
+      newHeight = newWidth * aspectRatio;
+
+      if (newHeight > availableHeight) {
+        newHeight = availableHeight;
+        newWidth = newHeight / aspectRatio;
+      }
+    }
+
+    return { width: newWidth, height: newHeight };
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions(calculateDimensions());
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isOpen]);
 
   useEffect(() => {
     const customerId =
@@ -79,6 +124,7 @@ const ChatBot = () => {
             handleSubmit={handleSubmit}
             clearHistory={clearHistory}
             isLoading={isLoading}
+            showInput={false}
           />
         );
       case "faq":
@@ -89,7 +135,7 @@ const ChatBot = () => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 right-4 z-50" ref={chatBotRef}>
       {!isOpen ? (
         <motion.button
           onClick={() => setIsOpen(true)}
@@ -108,7 +154,13 @@ const ChatBot = () => {
         <AnimatePresence>
           {isOpen && (
             <motion.div
-              className="bg-white rounded-lg shadow-xl w-96 h-[600px] flex flex-col"
+              className="bg-white rounded-lg shadow-xl flex flex-col"
+              style={{
+                width: `${dimensions.width}px`,
+                height: `${dimensions.height}px`,
+                maxWidth: "96vw",
+                maxHeight: "80vh",
+              }}
               initial={{ opacity: 0, y: 20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.9 }}
@@ -116,7 +168,7 @@ const ChatBot = () => {
             >
               {/* Header Chatbot */}
               <div className="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
-                <h3 className="text-lg font-semibold">
+                <h3 className="text-lg font-semibold truncate">
                   Customer Service Assistant
                 </h3>
                 <div className="flex items-center gap-2">
@@ -133,7 +185,9 @@ const ChatBot = () => {
               </div>
 
               {/* Main Content Area */}
-              {renderContent()}
+              <div className="flex flex-col flex-grow overflow-hidden">
+                {renderContent()}
+              </div>
 
               {/* Tab Bar */}
               <TabBarChat
