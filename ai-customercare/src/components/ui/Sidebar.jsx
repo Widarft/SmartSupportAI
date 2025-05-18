@@ -64,7 +64,7 @@ const Sidebar = () => {
             style={{ width: "16rem" }}
           >
             {/* Logo */}
-            <div className="p-4 text-center text-xl font-bold border-b border-gray-700">
+            <div className="p-4 pt-14 md:pt-4 text-center text-xl font-bold border-b border-gray-700">
               Smart Support AI
             </div>
 

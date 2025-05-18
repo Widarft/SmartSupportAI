@@ -154,14 +154,7 @@ const DetailChatHistoryPage = () => {
         } md:translate-x-0 fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 text-white transition-transform duration-300 ease-in-out`}
       >
         <div className="p-4 h-full overflow-y-auto">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center text-white hover:text-gray-300 mb-4"
-          >
-            <FaArrowLeft className="mr-2" />
-            Back to list
-          </button>
-          <h2 className="text-xl font-bold">Chat Details</h2>
+          <h2 className="text-xl font-bold pt-10 md:pt-4">Chat Details</h2>
           <p className="text-sm text-gray-300 mt-2">Customer: {customerId}</p>
           <button
             onClick={handleGenerateSummary}
@@ -175,6 +168,15 @@ const DetailChatHistoryPage = () => {
             <FaFileAlt className="mr-2" />
             {isGeneratingSummary ? "Generating..." : "Generate Summary"}
           </button>
+          <div className="mt-auto pt-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center text-white hover:text-gray-300"
+            >
+              <FaArrowLeft className="mr-2" />
+              Back to list
+            </button>
+          </div>
         </div>
       </div>
 
