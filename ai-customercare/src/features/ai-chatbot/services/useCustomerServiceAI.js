@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { buildPrompt } from "../utils/promptBuilder";
 import { generationConfig, safetySettings } from "../config/geminiConfig";
 import { getUserFAQs } from "../../faq-management/services/faqService";
-import { saveChat } from "./ chatHistoryService";
+import { saveChat } from "./chatHistoryService";
 import { generateCustomerId } from "../utils/customerUtils";
 import { findTopRelevantFAQs } from "../utils/faqMatcher";
 

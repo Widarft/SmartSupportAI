@@ -11,6 +11,7 @@ import { auth } from "../services/firebase";
 import CategoryManagement from "../features/faq-management/components/CategoryManagement";
 import AdminHistoryChat from "../features/admin-history-chat/components";
 import DetailChatHistoryPage from "../features/admin-history-chat/components/DetailChatHistoryPage";
+import ChatbotEmbed from "../features/ai-chatbot/components/ChatbotEmbed";
 
 function AppRoutes() {
   const [user, setUser] = useState(null);
@@ -35,6 +36,7 @@ function AppRoutes() {
         <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/embed" element={<ChatbotEmbed />} />
 
         {/* PrivateRoute */}
         <Route

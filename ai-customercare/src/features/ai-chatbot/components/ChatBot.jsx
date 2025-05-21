@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCustomerServiceAI } from "../services/useCustomerServiceAI";
 import { BsChatDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import { Tooltip } from "react-tooltip";
+import { getAuth, signInWithCustomToken } from "firebase/auth";
+import { useCustomerServiceAI } from "../services/useCustomerServiceAI";
 import {
   getCustomerChatHistory,
   saveChat,
-} from "../services/ chatHistoryService";
+} from "../services/chatHistoryService";
 import { generateCustomerId } from "../utils/customerUtils";
 
 import HomePageChat from "./HomePageChat";
@@ -25,15 +26,48 @@ const ChatBot = () => {
   const { handleSend, isLoading } = useCustomerServiceAI();
   const [hasWelcomed, setHasWelcomed] = useState(false);
 
+  // Sign in customer using custom token
+  useEffect(() => {
+    const signInCustomerIfNeeded = async () => {
+      const auth = getAuth();
+      const tokenSignedKey = "customerSignedIn";
+
+      if (!auth.currentUser && !localStorage.getItem(tokenSignedKey)) {
+        const clientId =
+          localStorage.getItem("customerId") || generateCustomerId();
+        localStorage.setItem("customerId", clientId);
+
+        const adminUid = new URLSearchParams(window.location.search).get("uid");
+        if (!adminUid) {
+          console.error("Admin UID tidak ditemukan di URL.");
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `https://us-central1-smartsupportai-8e731.cloudfunctions.net/generateCustomToken?clientId=${clientId}&uid=${adminUid}`
+          );
+          const { token } = await res.json();
+
+          await signInWithCustomToken(auth, token);
+          localStorage.setItem(tokenSignedKey, "true");
+          console.log("Customer signed in with custom token.");
+        } catch (err) {
+          console.error("Gagal login dengan custom token:", err);
+        }
+      }
+    };
+
+    signInCustomerIfNeeded();
+  }, []);
+
   const calculateDimensions = () => {
     const maxWidth = 384;
     const maxHeight = 600;
     const aspectRatio = maxHeight / maxWidth;
 
     const availableWidth = window.innerWidth * 0.9;
-
     const availableHeight = window.innerHeight * 0.8;
-
     const heightLimited = availableHeight < maxHeight;
 
     let newWidth, newHeight;
@@ -41,7 +75,6 @@ const ChatBot = () => {
     if (heightLimited) {
       newHeight = availableHeight;
       newWidth = newHeight / aspectRatio;
-
       newWidth = Math.min(newWidth, availableWidth);
     } else {
       newWidth = Math.min(availableWidth, maxWidth);
@@ -62,9 +95,7 @@ const ChatBot = () => {
     };
 
     handleResize();
-
     window.addEventListener("resize", handleResize);
-
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen]);
 
@@ -116,7 +147,6 @@ const ChatBot = () => {
         };
 
         await new Promise((resolve) => setTimeout(resolve, 500));
-
         await saveChat(customerId, welcomeMessage.message, "ai");
 
         setMessages([welcomeMessage]);
