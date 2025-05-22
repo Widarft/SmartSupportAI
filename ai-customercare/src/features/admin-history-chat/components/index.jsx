@@ -1,14 +1,14 @@
 import React from "react";
 import Sidebar from "../../../components/ui/Sidebar";
-import ChatBotReview from "./ChatBotReview";
+import ChatHistoryPage from "./ChatHistoryPage";
 
-const AIChatBotReview = () => {
+const AdminHistoryChat = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
-      <ChatBotReview />
+      <ChatHistoryPage />
     </div>
   );
 };
 
-export default AIChatBotReview;
+export default AdminHistoryChat;

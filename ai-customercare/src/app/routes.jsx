@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import LandingPage from "../features/landing-page";
+import WelcomePage from "../features/landing-page/components/WelcomePage";
 import Register from "../features/auth/components/Register";
 import Login from "../features/auth/components/Login";
 import Home from "../features/home/components/Home";
@@ -9,6 +9,9 @@ import FAQ from "../features/faq-management/components";
 import AIChatBotReview from "../features/ai-chatbot/components";
 import { auth } from "../services/firebase";
 import CategoryManagement from "../features/faq-management/components/CategoryManagement";
+import AdminHistoryChat from "../features/admin-history-chat/components";
+import DetailChatHistoryPage from "../features/admin-history-chat/components/DetailChatHistoryPage";
+import ChatbotEmbed from "../features/ai-chatbot/components/ChatbotEmbed";
 
 function AppRoutes() {
   const [user, setUser] = useState(null);
@@ -30,9 +33,10 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/landingpage" element={<LandingPage />} />
+        <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/embed" element={<ChatbotEmbed />} />
 
         {/* PrivateRoute */}
         <Route
@@ -67,6 +71,22 @@ function AppRoutes() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/adminhistorychat"
+          element={
+            <PrivateRoute>
+              <AdminHistoryChat />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/adminhistorychat/:customerId"
+          element={
+            <PrivateRoute>
+              <DetailChatHistoryPage />
+            </PrivateRoute>
+          }
+        ></Route>
       </Routes>
     </BrowserRouter>
   );
