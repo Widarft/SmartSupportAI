@@ -12,6 +12,7 @@ import CategoryManagement from "../features/faq-management/components/CategoryMa
 import AdminHistoryChat from "../features/admin-history-chat/components";
 import DetailChatHistoryPage from "../features/admin-history-chat/components/DetailChatHistoryPage";
 import ChatbotEmbed from "../features/ai-chatbot/components/ChatbotEmbed";
+import ChatbotTestUser from "../features/user-test/components/ChatbotTestUser";
 
 function AppRoutes() {
   const [user, setUser] = useState(null);
@@ -87,6 +88,14 @@ function AppRoutes() {
             </PrivateRoute>
           }
         ></Route>
+        <Route
+          path="/testuser"
+          element={
+            <PrivateRoute>
+              <ChatbotTestUser />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
