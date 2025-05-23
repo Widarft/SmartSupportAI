@@ -3,6 +3,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { buildPrompt } from "../utils/promptBuilder";
 import { generationConfig, safetySettings } from "../config/geminiConfig";
 import { getUserFAQs } from "../../faq-management/services/faqService";
+import { saveChat } from "./chatHistoryService";
+import { generateCustomerId } from "../utils/customerUtils";
+import { findTopRelevantFAQs } from "../utils/faqMatcher";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
@@ -24,10 +27,6 @@ export const useCustomerServiceAI = () => {
     setError(null);
 
     try {
-      if (!import.meta.env.VITE_GEMINI_API_KEY) {
-        throw new Error("API Key is not defined. Check your .env file.");
-      }
-
       const model = genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
         generationConfig,
@@ -35,11 +34,14 @@ export const useCustomerServiceAI = () => {
       });
 
       const formattedHistory = history.map((msg) => ({
-        user: msg.user,
+        user: msg.user || (msg.sender === "user" ? "User" : "AI Assistant"),
         response: msg.message,
+        time: msg.time,
       }));
 
-      const prompt = buildPrompt(userPrompt, formattedHistory, faqs);
+      const relevantFaqs = await findTopRelevantFAQs(userPrompt, faqs);
+
+      const prompt = buildPrompt(userPrompt, formattedHistory, relevantFaqs);
       const result = await model.generateContent(prompt);
       const response = await result.response.text();
 
@@ -56,22 +58,35 @@ export const useCustomerServiceAI = () => {
   const handleSend = async (userInput, history) => {
     if (!userInput.trim()) return history;
 
+    const customerId =
+      localStorage.getItem("customerId") || generateCustomerId();
+    const currentTime = new Date();
+
     const userMessage = {
       user: "User",
       message: userInput,
-      time: new Date().toLocaleTimeString(),
+      sender: "user",
+      timestamp: currentTime,
+      time: currentTime.toLocaleTimeString(),
     };
+    await saveChat(customerId, userInput, "user");
 
-    const updatedHistory = [...history, userMessage];
-    const aiResponse = await generateResponse(userInput, updatedHistory);
+    const aiResponse = await generateResponse(userInput, [
+      ...history,
+      userMessage,
+    ]);
 
     const aiMessage = {
       user: "AI Assistant",
       message: aiResponse,
+      sender: "ai",
+      timestamp: new Date(),
       time: new Date().toLocaleTimeString(),
     };
 
-    return [...updatedHistory, aiMessage];
+    await saveChat(customerId, aiResponse, "ai");
+
+    return [...history, userMessage, aiMessage];
   };
 
   return {

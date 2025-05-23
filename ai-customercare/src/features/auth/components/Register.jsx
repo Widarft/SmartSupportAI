@@ -3,13 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import { registerSchema } from "../../../utils/validationSchema";
 import PasswordInput from "../../../components/input/PasswordInput";
+import { FaHome } from "react-icons/fa";
 
 const Register = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 relative">
       <div className="w-96 bg-white p-6 rounded-lg shadow-md">
+        <button
+          onClick={() => navigate("/welcome")}
+          className="top-4 left-4 flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+        >
+          <FaHome className="mr-1 mb-6" size={25} />
+        </button>
         <h2 className="text-2xl font-bold text-center">Register</h2>
         <Formik
           initialValues={{ email: "", password: "" }}
@@ -54,10 +61,18 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-blue-500 text-white p-2 rounded mt-3"
+                className="w-full bg-green-500 hover:bg-green-400 text-white p-2 rounded mt-10 transition duration-300"
               >
                 {isSubmitting ? "Registering..." : "Register"}
               </button>
+              <div className="flex justify-center mt-2 mb-4">
+                <p
+                  onClick={() => navigate("/login")}
+                  className="text-sm hover:text-blue-500 cursor-pointer"
+                >
+                  Sudah memiliki akun?
+                </p>
+              </div>
             </Form>
           )}
         </Formik>

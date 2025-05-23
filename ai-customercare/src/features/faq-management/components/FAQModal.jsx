@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-const FAQModal = ({ isOpen, onClose, onSubmit, initialData }) => {
+const FAQModal = ({ isOpen, onClose, onSubmit, initialData, categories }) => {
   const [formData, setFormData] = React.useState({
     question: "",
     answer: "",
@@ -44,12 +44,12 @@ const FAQModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h3 className="text-xl font-semibold mb-4">
-          {initialData?.id ? "Edit FAQ" : "Tambah FAQ"}
+          {initialData?.id ? "Edit FAQ" : "Add FAQ"}
         </h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
-            placeholder="Pertanyaan"
+            placeholder="Question"
             value={formData.question}
             onChange={(e) =>
               setFormData({ ...formData, question: e.target.value })
@@ -57,7 +57,7 @@ const FAQModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             className="w-full p-2 border rounded"
           />
           <textarea
-            placeholder="Jawaban"
+            placeholder="Answer"
             value={formData.answer}
             onChange={(e) =>
               setFormData({ ...formData, answer: e.target.value })
@@ -71,17 +71,12 @@ const FAQModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             }
             className="w-full p-2 border rounded"
           >
-            <option value="">Pilih Kategori</option>
-            <option value="Pemesanan">Pemesanan</option>
-            <option value="Pembayaran">Pembayaran</option>
-            <option value="Pengiriman">Pengiriman</option>
-            <option value="Pengembalian & Refund">Pengembalian & Refund</option>
-            <option value="Akun & Keamanan">Akun & Keamanan</option>
-            <option value="Produk">Produk</option>
-            <option value="Promosi & Voucher">Promosi & Voucher</option>
-            <option value="Program Membership">Program Membership</option>
-            <option value="Teknikal">Teknikal</option>
-            <option value="Lainnya">Lainnya</option>
+            <option value="">Select Category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.name}>
+                {category.name}
+              </option>
+            ))}
           </select>
           <div className="flex justify-end space-x-2">
             <button
@@ -89,13 +84,13 @@ const FAQModal = ({ isOpen, onClose, onSubmit, initialData }) => {
               className="bg-gray-500 text-white px-4 py-2 rounded"
               onClick={handleClose}
             >
-              Batal
+              Cancel
             </button>
             <button
               type="submit"
               className="bg-blue-500 text-white px-4 py-2 rounded"
             >
-              {initialData?.id ? "Update" : "Simpan"}
+              {initialData?.id ? "Update" : "Save"}
             </button>
           </div>
         </form>
@@ -109,6 +104,7 @@ FAQModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   initialData: PropTypes.object,
+  categories: PropTypes.array.isRequired,
 };
 
 export default FAQModal;
