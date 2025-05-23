@@ -1,5 +1,5 @@
 import React from "react";
-import BGImage from "../../../assets/image/106+ Forêt Wallpapers _ Free download _ Best Collection.jpeg";
+import BGImage from "../../../../public/image/bg-forest.jpeg";
 
 const HeroSection = () => {
   return (
