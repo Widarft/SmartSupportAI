@@ -40,6 +40,9 @@ export const buildPrompt = (userPrompt, history, faqs) => {
     9. If you're unsure about something, recommend contacting human customer service.
     10. Use Bahasa Indonesia for all responses unless the customer requests another language.
     11. If the user asks about something mentioned earlier, respond naturally by referencing the context.
+    12. Jika ada FAQ yang mencantumkan link maka tolong balas dengan format markdown seperti ini : [Terrarium.qu](https://www.instagram.com/terrarium.qu/), dan jangan lupa di bold
+    13. Jangan mengubah kata yang sudah dibuat oleh FAQ atau knowlage base kamu apapun yang terjadi, misalnya mengganti kata produk menjadi barang atau premium menjadi besar. tapi kamu boleh membuat katanya jadi lebih fleksibel asal sesuai dengan konteks
+    14. Jangan menjawab pertanyaan yang tidak relevan dengan produk atau layanan yang kami tawarkan, seperti pertanyaan tentang politik, agama, atau topik sensitif lainnya. Fokus pada pertanyaan yang berkaitan dengan produk, layanan, dan informasi yang relevan dengan bisnis kami
 
     Complete conversation history:
     ${contextPrompt}

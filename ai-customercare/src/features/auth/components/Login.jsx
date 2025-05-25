@@ -65,14 +65,14 @@ const Login = () => {
               >
                 {isSubmitting ? "Logging in..." : "Login"}
               </button>
-              <div className="flex justify-center mt-2 mb-4">
+              {/* <div className="flex justify-center mt-2 mb-4">
                 <p
                   onClick={() => navigate("/register")}
                   className="text-sm  hover:text-blue-500"
                 >
                   Belum memiliki akun?
                 </p>
-              </div>
+              </div> */}
             </Form>
           )}
         </Formik>

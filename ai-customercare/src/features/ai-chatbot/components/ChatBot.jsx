@@ -140,7 +140,8 @@ const ChatBot = () => {
           localStorage.getItem("customerId") || generateCustomerId();
         const welcomeMessage = {
           user: "AI Assistant",
-          message: "Halo! Saya asisten virtual Anda. Ada yang bisa saya bantu?",
+          message:
+            "Halo! Saya asisten virtual Anda. Ada yang bisa saya bantu? Misalnya anda ingin informasi tentang produk, pemesanan, atau informasi lainnya",
           sender: "ai",
           timestamp: new Date(),
           time: new Date().toLocaleTimeString(),
